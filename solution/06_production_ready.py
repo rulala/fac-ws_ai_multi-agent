@@ -281,9 +281,3 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(f"Pipeline failed: {str(e)}")
         print(f"Pipeline failed: {str(e)}")
-
-    print("\n=== EXERCISE ===")
-    print("1. Add metrics collection and monitoring")
-    print("2. Implement real human-in-the-loop with API")
-    print("3. Add deployment automation")
-    print("4. Create rollback mechanisms")

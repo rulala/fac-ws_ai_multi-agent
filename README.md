@@ -170,6 +170,11 @@ Add error handling, state persistence, human-in-the-loop, and monitoring.
 
 #### Challenges
 
+1. Add metrics collection and monitoring
+2. Implement real human-in-the-loop with API
+3. Add deployment automation
+4. Create rollback mechanisms
+
 ## Hands-On Exercises
 
 Each part includes:
