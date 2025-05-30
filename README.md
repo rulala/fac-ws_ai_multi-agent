@@ -93,7 +93,7 @@ Add quality gates that route code based on review scores. Poor code gets additio
 ### Part 3: Efficiency - Parallel Processing
 
 **Pattern**: Concurrent analysis
-**When to use**: Independent, parallelizable tasks
+**When to use**: Independent, parallelisable tasks
 **File**: `03_parallel_processing.py`
 
 Run code analysis, security scanning, and performance checks simultaneously.
@@ -102,7 +102,7 @@ Run code analysis, security scanning, and performance checks simultaneously.
 
 - Parallel execution
 - Result aggregation
-- Performance optimization
+- Performance optimisation
 
 #### Challenges
 
@@ -113,15 +113,15 @@ Run code analysis, security scanning, and performance checks simultaneously.
 
 ### Part 4: Specialisation - Multi-Agent Supervisor
 
-**Pattern**: Supervisor with specialized agents
+**Pattern**: Supervisor with specialised agents
 **When to use**: Complex tasks requiring domain expertise
 **File**: `04_supervisor_agents.py`
 
-A supervisor coordinates specialized agents: security expert, performance analyst, code quality checker.
+A supervisor coordinates specialised agents: security expert, performance analyst, code quality checker.
 
 #### Key Concepts
 
-- Agent specialization
+- Agent specialisation
 - Supervisor pattern
 - Dynamic agent selection
 
@@ -132,11 +132,11 @@ A supervisor coordinates specialized agents: security expert, performance analys
 3. Add expert-to-expert communication
 4. **Discussion**: When is supervision better than parallel processing?
 
-### Part 5: Reliability - Evaluator-Optimizer Loop
+### Part 5: Reliability - Evaluator-Optimiser Loop
 
 **Pattern**: Continuous improvement through feedback
 **When to use**: When output quality can be iteratively improved
-**File**: `05_evaluator_optimizer.py`
+**File**: `05_evaluator_optimiser.py`
 
 Add a feedback loop where an evaluator scores outputs and provides improvement suggestions.
 
@@ -147,6 +147,11 @@ Add a feedback loop where an evaluator scores outputs and provides improvement s
 - Iterative refinement
 
 #### Challenges
+
+1. Add specific evaluation criteria (e.g., test coverage)
+2. Create different optimisation strategies based on issue type
+3. Add human-in-the-loop evaluation
+4. **Discussion**: When is iterative optimisation most valuable?
 
 ### Part 6: Production Readiness
 
@@ -181,8 +186,8 @@ Each part includes:
 | Sequential          | Predictable workflows      | Dynamic requirements    |
 | Conditional         | Quality-dependent paths    | Complex decision trees  |
 | Parallel            | Independent tasks          | Sequential dependencies |
-| Supervisor          | Complex, specialized tasks | Simple workflows        |
-| Evaluator-Optimizer | Improvable outputs         | Time-critical tasks     |
+| Supervisor          | Complex, specialised tasks | Simple workflows        |
+| Evaluator-Optimiser | Improvable outputs         | Time-critical tasks     |
 
 ## Architecture Progression
 
@@ -198,7 +203,7 @@ Sequential → Conditional → Parallel → Multi-Agent → Self-Improving
 - **Conditional**: Content moderation systems
 - **Parallel**: Document processing pipelines
 - **Supervisor**: Complex analysis platforms
-- **Evaluator-Optimizer**: AI content generation
+- **Evaluator-Optimiser**: AI content generation
 
 ## Next Steps
 

@@ -195,9 +195,3 @@ if __name__ == "__main__":
 
     print("=== FINAL CODE ===")
     print(result["final_code"])
-
-    print("=== EXERCISE ===")
-    print("1. Add specific evaluation criteria (e.g., test coverage)")
-    print("2. Create different optimisation strategies based on issue type")
-    print("3. Add human-in-the-loop evaluation")
-    print("4. When is iterative optimisation most valuable?")
