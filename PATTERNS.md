@@ -197,11 +197,11 @@ graph TD
 
 ## Anti-Patterns
 
-❌ Using Supervisor for simple linear tasks
-❌ Parallel processing for sequential dependencies
-❌ Evaluator-Optimiser for time-critical tasks
-❌ Sequential for complex multi-domain problems
-❌ Skipping Production patterns for real deployment
+❌ Using Supervisor for simple linear tasks<br />
+❌ Parallel processing for sequential dependencies<br />
+❌ Evaluator-Optimiser for time-critical tasks<br />
+❌ Sequential for complex multi-domain problems<br />
+❌ Skipping Production patterns for real deployment<br />
 
 ## Performance Comparison
 
