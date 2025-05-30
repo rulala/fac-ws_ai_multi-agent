@@ -1,0 +1,13 @@
+# To create the conda environment, run:
+#   conda env create -f environment.yml
+name: fac-ws_ai_multi-agent
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.13.3
+  - pip
+  - pip:
+      - autopep8
+      - flake8
+      - "-e ."
