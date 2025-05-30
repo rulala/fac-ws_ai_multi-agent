@@ -151,24 +151,20 @@ graph LR
 
 ```mermaid
 graph LR
-   A[Start Simple] --> B[Add Intelligence]
-   B --> C[Scale Performance]
-   C --> D[Gain Expertise]
-   D --> E[Ensure Quality]
-   E --> F[Deploy Safely]
+    A[Start Simple] --> B[Add Intelligence]
+    B --> C[Scale Performance]
+    C --> D[Gain Expertise]
+    D --> E[Ensure Quality]
+    E --> F[Deploy Safely]
+```
 
-   A -.-> G[Sequential]
-   B -.-> H[Conditional]
-   C -.-> I[Parallel]
-   D -.-> J[Supervisor]
-   E -.-> K[Evaluator]
-   F -.-> L[Production]
-
-   G --> H
-   H --> I
-   I --> J
-   J --> K
-   K --> L
+```mermaid
+graph LR
+    A[Sequential] --> B[Conditional]
+    B --> C[Parallel]
+    C --> D[Supervisor]
+    D --> E[Evaluator]
+    E --> F[Production]
 ```
 
 ### Evolution Principles
