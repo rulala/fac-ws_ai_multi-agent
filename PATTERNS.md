@@ -76,12 +76,12 @@ graph LR
     Supervisor --> Decision{Which Expert?}
     Decision -->|Security Issues| SecurityExpert
     Decision -->|Performance Issues| PerformanceExpert
-    Decision -->|Quality Issues| QualityExpert
     Decision -->|Complete| Synthesis
+    Decision -->|Quality Issues| QualityExpert
     SecurityExpert --> Supervisor
     PerformanceExpert --> Supervisor
-    QualityExpert --> Supervisor
     Synthesis --> END
+    QualityExpert --> Supervisor
 ```
 
 ### Evaluator-Optimiser
