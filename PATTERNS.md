@@ -74,13 +74,16 @@ graph TD
    START --> Coder
    Coder --> Supervisor
    Supervisor --> Decision{Which Expert?}
-   Decision -->|Security Issues| SecurityExpert
-   Decision -->|Performance Issues| PerformanceExpert
-   Decision -->|Quality Issues| QualityExpert
+
+   Decision -->|Security| SE[SecurityExpert]
+   Decision -->|Performance| PE[PerformanceExpert]
+   Decision -->|Quality| QE[QualityExpert]
    Decision -->|Complete| Synthesis
-   SecurityExpert --> Supervisor
-   PerformanceExpert --> Supervisor
-   QualityExpert --> Supervisor
+
+   SE --> Supervisor
+   PE --> Supervisor
+   QE --> Supervisor
+
    Synthesis --> END
 ```
 
