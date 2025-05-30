@@ -106,7 +106,10 @@ Run code analysis, security scanning, and performance checks simultaneously.
 
 #### Challenges
 
-
+1. Add a testing agent that runs in parallel
+2. Compare execution time vs sequential approach
+3. Add error handling for failed parallel tasks
+4. **Discussion**: When is parallel processing most beneficial?
 
 ### Part 4: Specialisation - Multi-Agent Supervisor
 
@@ -124,8 +127,6 @@ A supervisor coordinates specialized agents: security expert, performance analys
 
 #### Challenges
 
-
-
 ### Part 5: Reliability - Evaluator-Optimizer Loop
 
 **Pattern**: Continuous improvement through feedback
@@ -141,8 +142,6 @@ Add a feedback loop where an evaluator scores outputs and provides improvement s
 - Iterative refinement
 
 #### Challenges
-
-
 
 ### Part 6: Production Readiness
 
@@ -160,8 +159,6 @@ Add error handling, state persistence, human-in-the-loop, and monitoring.
 - Monitoring and debugging
 
 #### Challenges
-
-
 
 ## Hands-On Exercises
 

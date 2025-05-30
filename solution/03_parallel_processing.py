@@ -109,9 +109,3 @@ if __name__ == "__main__":
     print(result["style_analysis"])
     print("\n=== SYNTHESIS REPORT ===")
     print(result["final_report"])
-
-    print("\n=== EXERCISE ===")
-    print("1. Add a testing agent that runs in parallel")
-    print("2. Compare execution time vs sequential approach")
-    print("3. Add error handling for failed parallel tasks")
-    print("4. When is parallel processing most beneficial?")
