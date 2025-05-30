@@ -9,8 +9,9 @@ This workshop teaches LangGraph through architectural patterns, not copy-paste c
 ## Prerequisites
 
 - Python 3.9+ or Anaconda/Miniconda
-- OpenAI/Anthropic API key
+- OpenAI API key
 - Basic understanding of Python and AI concepts
+- Read about the [architectural patterns](PATTERNS.md)
 
 ## Quick Start
 
@@ -55,11 +56,18 @@ This workshop teaches LangGraph through architectural patterns, not copy-paste c
 
 Build a basic coder → reviewer → refactorer pipeline. Learn LangGraph fundamentals: states, nodes, edges.
 
-**Key Concepts:**
+#### Key Concepts
 
 - StateGraph basics
 - Sequential execution
 - State management
+
+#### Challenges
+
+1. Try different coding tasks
+2. Modify prompts to change agent behaviour
+3. Add a 'tester' agent that writes unit tests
+4. When would you use this pattern vs others?
 
 ### Part 2: Adding Intelligence - Conditional Routing
 
@@ -69,7 +77,7 @@ Build a basic coder → reviewer → refactorer pipeline. Learn LangGraph fundam
 
 Add quality gates that route code based on review scores. Poor code gets additional refinement cycles.
 
-**Key Concepts:**
+#### Key Concepts
 
 - Conditional edges
 - Quality evaluation
@@ -83,7 +91,7 @@ Add quality gates that route code based on review scores. Poor code gets additio
 
 Run code analysis, security scanning, and performance checks simultaneously.
 
-**Key Concepts:**
+#### Key Concepts
 
 - Parallel execution
 - Result aggregation
@@ -97,7 +105,7 @@ Run code analysis, security scanning, and performance checks simultaneously.
 
 A supervisor coordinates specialized agents: security expert, performance analyst, code quality checker.
 
-**Key Concepts:**
+#### Key Concepts
 
 - Agent specialization
 - Supervisor pattern
@@ -111,7 +119,7 @@ A supervisor coordinates specialized agents: security expert, performance analys
 
 Add a feedback loop where an evaluator scores outputs and provides improvement suggestions.
 
-**Key Concepts:**
+#### Key Concepts
 
 - Feedback loops
 - Quality assessment
@@ -125,7 +133,7 @@ Add a feedback loop where an evaluator scores outputs and provides improvement s
 
 Add error handling, state persistence, human-in-the-loop, and monitoring.
 
-**Key Concepts:**
+#### Key Concepts
 
 - Error recovery
 - State persistence

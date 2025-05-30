@@ -72,9 +72,3 @@ if __name__ == "__main__":
     print(result["review"])
     print("\n=== REFACTORED CODE ===")
     print(result["refactored_code"])
-
-    print("\n=== EXERCISE ===")
-    print("1. Try different coding tasks")
-    print("2. Modify prompts to change agent behaviour")
-    print("3. Add a 'tester' agent that writes unit tests")
-    print("4. When would you use this pattern vs others?")
