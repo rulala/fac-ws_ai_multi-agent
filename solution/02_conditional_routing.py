@@ -22,7 +22,7 @@ class CodeReviewState(TypedDict):
     iteration_count: int
 
 
-llm = ChatOpenAI(model="gpt-4o")
+llm = ChatOpenAI(model="gpt-4.1-nano")
 
 coder_prompt = ChatPromptTemplate.from_messages([
     ("system", "You are a Senior Software Engineer. Write clean, well-structured Python code."),
