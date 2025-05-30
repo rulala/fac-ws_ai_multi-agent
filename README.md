@@ -127,6 +127,11 @@ A supervisor coordinates specialized agents: security expert, performance analys
 
 #### Challenges
 
+1. Add domain-specific experts (e.g., database, API design)
+2. Make supervisor more intelligent about expert selection
+3. Add expert-to-expert communication
+4. **Discussion**: When is supervision better than parallel processing?
+
 ### Part 5: Reliability - Evaluator-Optimizer Loop
 
 **Pattern**: Continuous improvement through feedback

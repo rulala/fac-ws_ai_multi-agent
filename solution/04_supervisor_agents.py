@@ -199,9 +199,3 @@ if __name__ == "__main__":
 
     print("\n=== FINAL ANALYSIS ===")
     print(result["final_analysis"])
-
-    print("\n=== EXERCISE ===")
-    print("1. Add domain-specific experts (e.g., database, API design)")
-    print("2. Make supervisor more intelligent about expert selection")
-    print("3. Add expert-to-expert communication")
-    print("4. When is supervision better than parallel processing?")
