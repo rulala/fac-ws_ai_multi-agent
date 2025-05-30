@@ -70,18 +70,18 @@ graph LR
 - **Use cases**: Complex analysis, Domain expertise, Dynamic workflows
 
 ```mermaid
-graph LR
-    START --> Coder
-    Coder --> Supervisor
-    Supervisor --> Decision{Which Expert?}
-    Decision -->|Security Issues| SecurityExpert
-    Decision -->|Performance Issues| PerformanceExpert
-    Decision -->|Complete| Synthesis
-    Decision -->|Quality Issues| QualityExpert
-    SecurityExpert --> Supervisor
-    PerformanceExpert --> Supervisor
-    Synthesis --> END
-    QualityExpert --> Supervisor
+graph TD
+   START --> Coder
+   Coder --> Supervisor
+   Supervisor --> Decision{Which Expert?}
+   Decision -->|Security Issues| SecurityExpert
+   Decision -->|Performance Issues| PerformanceExpert
+   Decision -->|Quality Issues| QualityExpert
+   Decision -->|Complete| Synthesis
+   SecurityExpert --> Supervisor
+   PerformanceExpert --> Supervisor
+   QualityExpert --> Supervisor
+   Synthesis --> END
 ```
 
 ### Evaluator-Optimiser
