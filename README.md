@@ -67,7 +67,7 @@ Build a basic coder → reviewer → refactorer pipeline. Learn LangGraph fundam
 1. Try different coding tasks
 2. Modify prompts to change agent behaviour
 3. Add a 'tester' agent that writes unit tests
-4. When would you use this pattern vs others?
+4. **Discussion**: When would you use this pattern vs others?
 
 ### Part 2: Adding Intelligence - Conditional Routing
 
@@ -83,6 +83,13 @@ Add quality gates that route code based on review scores. Poor code gets additio
 - Quality evaluation
 - Branching logic
 
+#### Challenges
+
+1. Adjust quality threshold and see how it affects iterations
+2. Add different quality criteria (security, performance)
+3. Create a 'fast track' for simple code that skips some steps
+4. **Discussion**: When would conditional routing be better than sequential flow?
+
 ### Part 3: Efficiency - Parallel Processing
 
 **Pattern**: Concurrent analysis
@@ -96,6 +103,10 @@ Run code analysis, security scanning, and performance checks simultaneously.
 - Parallel execution
 - Result aggregation
 - Performance optimization
+
+#### Challenges
+
+
 
 ### Part 4: Specialisation - Multi-Agent Supervisor
 
@@ -111,6 +122,10 @@ A supervisor coordinates specialized agents: security expert, performance analys
 - Supervisor pattern
 - Dynamic agent selection
 
+#### Challenges
+
+
+
 ### Part 5: Reliability - Evaluator-Optimizer Loop
 
 **Pattern**: Continuous improvement through feedback
@@ -124,6 +139,10 @@ Add a feedback loop where an evaluator scores outputs and provides improvement s
 - Feedback loops
 - Quality assessment
 - Iterative refinement
+
+#### Challenges
+
+
 
 ### Part 6: Production Readiness
 
@@ -139,6 +158,10 @@ Add error handling, state persistence, human-in-the-loop, and monitoring.
 - State persistence
 - Human oversight
 - Monitoring and debugging
+
+#### Challenges
+
+
 
 ## Hands-On Exercises
 

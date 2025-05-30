@@ -117,9 +117,3 @@ if __name__ == "__main__":
     print(result["code"])
     print("\n=== FINAL REVIEW ===")
     print(result["review"])
-
-    print("\n=== EXERCISE ===")
-    print("1. Adjust quality threshold and see how it affects iterations")
-    print("2. Add different quality criteria (security, performance)")
-    print("3. Create a 'fast track' for simple code that skips some steps")
-    print("4. When would conditional routing be better than sequential flow?")
