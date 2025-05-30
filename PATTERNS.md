@@ -29,7 +29,7 @@ graph LR
 - **Use cases**: Content moderation, Quality assurance, Iterative improvement
 
 ```mermaid
-graph TD
+graph LR
     START --> Coder
     Coder --> Reviewer
     Reviewer --> QualityEvaluator
