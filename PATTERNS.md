@@ -49,7 +49,7 @@ graph TD
 - **Use cases**: Document processing, Multi-aspect analysis, Performance optimisation
 
 ```mermaid
-graph TD
+graph LR
     START --> Coder
     Coder --> SecurityAgent
     Coder --> PerformanceAgent
@@ -70,7 +70,7 @@ graph TD
 - **Use cases**: Complex analysis, Domain expertise, Dynamic workflows
 
 ```mermaid
-graph TD
+graph LR
     START --> Coder
     Coder --> Supervisor
     Supervisor --> Decision{Which Expert?}
@@ -94,7 +94,7 @@ graph TD
 - **Use cases**: Content generation, Optimisation tasks, Quality refinement
 
 ```mermaid
-graph TD
+graph LR
     START --> Generator
     Generator --> Evaluator
     Evaluator --> ShouldContinue{Quality Good?}
@@ -114,7 +114,7 @@ graph TD
 - **Use cases**: Production systems, Enterprise deployment, Mission-critical tasks
 
 ```mermaid
-graph TD
+graph LR
     START --> Coder
     Coder --> ErrorCheck{Error?}
     ErrorCheck -->|Yes| ErrorRecovery
