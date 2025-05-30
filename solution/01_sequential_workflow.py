@@ -64,6 +64,7 @@ workflow = builder.compile()
 if __name__ == "__main__":
     task = "Write a function that validates email addresses using regex"
 
+    print("Running sequential workflow...")
     result = workflow.invoke({"input": task})
 
     print("=== ORIGINAL CODE ===")

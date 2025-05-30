@@ -96,7 +96,7 @@ workflow = builder.compile()
 if __name__ == "__main__":
     task = "Write a web API endpoint that processes user uploads and stores them in a database"
 
-    print("Running parallel analysis...")
+    print("Running parallel processing...")
     result = workflow.invoke({"input": task})
 
     print("=== GENERATED CODE ===")

@@ -110,6 +110,7 @@ workflow = builder.compile()
 if __name__ == "__main__":
     task = "Write a function that processes a list of user data and handles potential errors"
 
+    print("Running conditional routing...")
     result = workflow.invoke({"input": task})
 
     print(
