@@ -2,22 +2,15 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START, END
 from typing import TypedDict, Literal
-from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
 load_dotenv()
-
-
-class QualityScore(BaseModel):
-    score: int = Field(description="Quality score from 1-10")
-    reasoning: str = Field(description="Explanation for the score")
 
 
 class CodeReviewState(TypedDict):
     input: str
     code: str
     review: str
-    refactored_code: str
     quality_score: int
     iteration_count: int
 
@@ -25,24 +18,23 @@ class CodeReviewState(TypedDict):
 llm = ChatOpenAI(model="gpt-4.1-nano")
 
 coder_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Senior Software Engineer. Write clean, well-structured Python code."),
+    ("system", "You are a Senior Software Engineer. Write clean Python code."),
     ("human", "{input}")
 ])
 
 reviewer_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Code Reviewer. Provide detailed feedback on code quality, readability, and best practices."),
+    ("system", "You are a Code Reviewer. Provide feedback on code quality and best practices."),
     ("human", "Review this code:\n{code}")
 ])
 
-quality_evaluator_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Quality Assessor. Score code from 1-10 based on readability, efficiency, and best practices."),
+evaluator_prompt = ChatPromptTemplate.from_messages([
+    ("system", "Rate this code from 1-10 based on quality. Respond with just the number."),
     ("human", "Code:\n{code}\n\nReview:\n{review}")
 ])
 
 refactorer_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Refactoring Expert. Focus on the specific issues mentioned in the review."),
-    ("human",
-     "Code:\n{code}\n\nReview feedback:\n{review}\n\nRefactor to address these issues:")
+    ("system", "You are a Refactoring Expert. Improve the code based on review feedback."),
+    ("human", "Code:\n{code}\n\nFeedback:\n{review}\n\nRefactor to address issues:")
 ])
 
 
@@ -57,18 +49,22 @@ def reviewer_agent(state: CodeReviewState) -> CodeReviewState:
 
 
 def quality_evaluator_agent(state: CodeReviewState) -> CodeReviewState:
-    structured_llm = llm.with_structured_output(QualityScore)
-    response = structured_llm.invoke(quality_evaluator_prompt.format_messages(
-        code=state["code"], review=state["review"]))
-    return {"quality_score": response.score}
+    response = llm.invoke(evaluator_prompt.format_messages(
+        code=state["code"], review=state["review"]
+    ))
+    try:
+        score = int(response.content.strip())
+    except:
+        score = 5
+    return {"quality_score": score}
 
 
 def refactorer_agent(state: CodeReviewState) -> CodeReviewState:
     response = llm.invoke(refactorer_prompt.format_messages(
-        code=state["code"], review=state["review"]))
+        code=state["code"], review=state["review"]
+    ))
     return {
         "code": response.content,
-        "refactored_code": response.content,
         "iteration_count": state["iteration_count"] + 1
     }
 
@@ -98,23 +94,19 @@ builder.add_edge("reviewer", "quality_evaluator")
 builder.add_conditional_edges(
     "quality_evaluator",
     quality_gate,
-    {
-        "refactor": "refactorer",
-        "complete": END
-    }
+    {"refactor": "refactorer", "complete": END}
 )
 builder.add_edge("refactorer", "reviewer")
 
 workflow = builder.compile()
 
 if __name__ == "__main__":
-    task = "Write a function that processes a list of user data and handles potential errors"
+    task = "Write a function that processes user data with error handling"
 
     print("Running conditional routing...")
     result = workflow.invoke({"input": task})
 
-    print(
-        f"=== FINAL CODE (Score: {result['quality_score']}, Iterations: {result['iteration_count']}) ===")
+    print(f"=== FINAL CODE (Score: {result['quality_score']}, Iterations: {result['iteration_count']}) ===")
     print(result["code"])
     print("\n=== FINAL REVIEW ===")
     print(result["review"])
