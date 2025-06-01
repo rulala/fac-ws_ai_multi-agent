@@ -3,6 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START, END
 from typing import TypedDict
 from dotenv import load_dotenv
+from utils import ParallelCodebase
 
 load_dotenv()
 
@@ -16,10 +17,10 @@ class CodeAnalysisState(TypedDict):
     final_report: str
 
 
-llm = ChatOpenAI(model="gpt-4o")
+llm = ChatOpenAI(model="gpt-4.1-nano")
 
 coder_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Senior Software Engineer. Write production-ready Python code."),
+    ("system", "You are a Senior Software Engineer. Write ONLY Python code - no bash commands, no installation instructions, just the Python implementation."),
     ("human", "{input}")
 ])
 
@@ -99,13 +100,7 @@ if __name__ == "__main__":
     print("Running parallel processing...")
     result = workflow.invoke({"input": task})
 
-    print("=== GENERATED CODE ===")
-    print(result["code"])
-    print("\n=== SECURITY ANALYSIS ===")
-    print(result["security_analysis"])
-    print("\n=== PERFORMANCE ANALYSIS ===")
-    print(result["performance_analysis"])
-    print("\n=== STYLE ANALYSIS ===")
-    print(result["style_analysis"])
-    print("\n=== SYNTHESIS REPORT ===")
-    print(result["final_report"])
+    codebase = ParallelCodebase("03_parallel_processing", task)
+    codebase.generate(result)
+
+    print("=== WORKFLOW COMPLETED ===")

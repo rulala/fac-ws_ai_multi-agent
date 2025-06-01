@@ -3,7 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START, END
 from typing import TypedDict
 from dotenv import load_dotenv
-import datetime
+from utils import SequentialCodebase
 
 load_dotenv()
 
@@ -50,37 +50,6 @@ def refactorer_agent(state: CodeReviewState) -> CodeReviewState:
     return {"refactored_code": response.content}
 
 
-def export_to_markdown(result: dict, task: str, pattern_name: str):
-
-    filename = f"{pattern_name.upper()}.md"
-
-    markdown_content = f"""# {pattern_name.replace('_', ' ').title()} Results
-
-**Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
-**Task:** {task}
-
-## Original Code
-
-{result.get('code', 'No code generated')}
-
-## Review Feedback
-
-{result.get('review', 'No review available')}
-
-## Refactored Code
-
-{result.get('refactored_code', 'No refactored code available')}
-
----
-*Generated using LangGraph Sequential Workflow Pattern*
-"""
-
-    with open(filename, 'w', encoding='utf-8') as f:
-        f.write(markdown_content)
-
-    print(f"✅ Results exported to: {filename}")
-
-
 builder = StateGraph(CodeReviewState)
 builder.add_node("coder", coder_agent)
 builder.add_node("reviewer", reviewer_agent)
@@ -99,7 +68,7 @@ if __name__ == "__main__":
     print("Running sequential workflow...")
     result = workflow.invoke({"input": task})
 
-    export_to_markdown(result, task, "sequential_workflow")
+    codebase = SequentialCodebase("01_sequential_workflow", task)
+    codebase.generate(result)
 
     print("=== WORKFLOW COMPLETED ===")
-    print("Check the generated markdown file for detailed results.")

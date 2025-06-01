@@ -3,13 +3,14 @@ from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START, END
 from typing import TypedDict, Literal
 from dotenv import load_dotenv
+from utils import ConditionalCodebase
 
 load_dotenv()
 
 
 class CodeReviewState(TypedDict):
     input: str
-    code: str
+    code: list
     review: str
     quality_score: int
     iteration_count: int
@@ -34,23 +35,26 @@ evaluator_prompt = ChatPromptTemplate.from_messages([
 
 refactorer_prompt = ChatPromptTemplate.from_messages([
     ("system", "You are a Refactoring Expert. Improve the code based on review feedback."),
-    ("human", "Code:\n{code}\n\nFeedback:\n{review}\n\nRefactor to address issues:")
+    ("human",
+     "Code:\n{code}\n\nFeedback:\n{review}\n\nRefactor to address issues:")
 ])
 
 
 def coder_agent(state: CodeReviewState) -> CodeReviewState:
     response = llm.invoke(coder_prompt.format_messages(input=state["input"]))
-    return {"code": response.content, "iteration_count": state.get("iteration_count", 0)}
+    return {"code": [response.content], "iteration_count": state.get("iteration_count", 0)}
 
 
 def reviewer_agent(state: CodeReviewState) -> CodeReviewState:
-    response = llm.invoke(reviewer_prompt.format_messages(code=state["code"]))
+    current_code = state["code"][-1] if state["code"] else ""
+    response = llm.invoke(reviewer_prompt.format_messages(code=current_code))
     return {"review": response.content}
 
 
 def quality_evaluator_agent(state: CodeReviewState) -> CodeReviewState:
+    current_code = state["code"][-1] if state["code"] else ""
     response = llm.invoke(evaluator_prompt.format_messages(
-        code=state["code"], review=state["review"]
+        code=current_code, review=state["review"]
     ))
     try:
         score = int(response.content.strip())
@@ -60,11 +64,13 @@ def quality_evaluator_agent(state: CodeReviewState) -> CodeReviewState:
 
 
 def refactorer_agent(state: CodeReviewState) -> CodeReviewState:
+    current_code = state["code"][-1] if state["code"] else ""
     response = llm.invoke(refactorer_prompt.format_messages(
-        code=state["code"], review=state["review"]
+        code=current_code, review=state["review"]
     ))
+    updated_code_list = state["code"] + [response.content]
     return {
-        "code": response.content,
+        "code": updated_code_list,
         "iteration_count": state["iteration_count"] + 1
     }
 
@@ -106,7 +112,7 @@ if __name__ == "__main__":
     print("Running conditional routing...")
     result = workflow.invoke({"input": task})
 
-    print(f"=== FINAL CODE (Score: {result['quality_score']}, Iterations: {result['iteration_count']}) ===")
-    print(result["code"])
-    print("\n=== FINAL REVIEW ===")
-    print(result["review"])
+    codebase = ConditionalCodebase("02_conditional_routing", task)
+    codebase.generate(result)
+
+    print("=== WORKFLOW COMPLETED ===")
