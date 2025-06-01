@@ -21,17 +21,18 @@ class ProductionState(TypedDict):
     approved: bool
     retry_count: int
     final_code: str
+    feedback: str
 
 
 llm = ChatOpenAI(model="gpt-4.1-nano")
 
 coder_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Senior Software Engineer. Write ONLY production-ready Python code with error handling and documentation - no bash commands, no installation instructions, just the Python implementation.."),
+    ("system", "You are a Senior Software Engineer. Write ONLY production-ready Python code with error handling and documentation - no bash commands, no installation instructions, just the Python implementation."),
     ("human", "{input}")
 ])
 
 reviewer_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Senior QA Engineer.Review code for production readiness: security, error handling, documentation."),
+    ("system", "You are a Senior QA Engineer. Review code for production readiness: security, error handling, documentation."),
     ("human", "Review this code:\n{code}")
 ])
 
@@ -43,8 +44,15 @@ approval_prompt = ChatPromptTemplate.from_messages([
 
 def coder_agent(state: ProductionState) -> ProductionState:
     try:
-        response = llm.invoke(
-            coder_prompt.format_messages(input=state["input"]))
+        # Check if there's feedback from a previous rejection
+        feedback = state.get("feedback", "")
+        if feedback:
+            # Incorporate feedback into the prompt
+            full_input = f"{state['input']}\n\nIMPORTANT: Previous attempt was rejected with this feedback:\n{feedback}\n\nPlease address ALL these concerns."
+        else:
+            full_input = state["input"]
+
+        response = llm.invoke(coder_prompt.format_messages(input=full_input))
         return {"code": response.content}
     except Exception as e:
         print(f"Code generation failed: {e}")
@@ -70,10 +78,11 @@ def approval_agent(state: ProductionState) -> ProductionState:
 
         if decision.approved:
             print("✅ Code approved for production")
+            return {"approved": True, "feedback": ""}
         else:
             print(f"❌ Code rejected: {decision.feedback}")
-
-        return {"approved": decision.approved, "retry_count": state.get("retry_count", 0) + 1 if not decision.approved else 0}
+            # Don't increment retry_count here - let handle_errors do it
+            return {"approved": False, "feedback": decision.feedback}
 
     except Exception as e:
         print(f"Approval process failed: {e}")
@@ -86,7 +95,7 @@ def finalise_agent(state: ProductionState) -> ProductionState:
 
 
 def handle_errors(state: ProductionState) -> ProductionState:
-    retry_count = state.get("retry_count", 0)
+    retry_count = state.get("retry_count", 0) + 1  # INCREMENT!
     print(f"⚠️  Error occurred, retry {retry_count}/3")
     return {"retry_count": retry_count}
 
@@ -105,7 +114,7 @@ def check_approval(state: ProductionState) -> Literal["approved", "retry"]:
     retry_count = state.get("retry_count", 0)
     if retry_count >= 3:
         print("Max retries reached - manual intervention required")
-        return "approved"
+        return "approved"  # Force completion after max retries
 
     return "retry"
 
