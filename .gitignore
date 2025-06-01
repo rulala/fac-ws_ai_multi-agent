@@ -93,6 +93,9 @@ tmp/
 temp/
 *.tmp
 
+# Workshop files
+generated/
+
 # OS
 Thumbs.db
 .DS_Store
