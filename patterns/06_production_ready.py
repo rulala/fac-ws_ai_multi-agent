@@ -23,20 +23,20 @@ class ProductionState(TypedDict):
     final_code: str
 
 
-llm = ChatOpenAI(model="gpt-4o")
+llm = ChatOpenAI(model="gpt-4.1-nano")
 
 coder_prompt = ChatPromptTemplate.from_messages([
-    ("system", "Write production-ready Python code with error handling and documentation."),
+    ("system", "You are a Senior Software Engineer. Write ONLY production-ready Python code with error handling and documentation - no bash commands, no installation instructions, just the Python implementation.."),
     ("human", "{input}")
 ])
 
 reviewer_prompt = ChatPromptTemplate.from_messages([
-    ("system", "Review code for production readiness: security, error handling, documentation."),
+    ("system", "You are a Senior QA Engineer.Review code for production readiness: security, error handling, documentation."),
     ("human", "Review this code:\n{code}")
 ])
 
 approval_prompt = ChatPromptTemplate.from_messages([
-    ("system", "Decide if this code is ready for production deployment."),
+    ("system", "You are the Lead Technical Engineer on the project. Decide if this code is ready for production deployment."),
     ("human", "Code:\n{code}\n\nReview:\n{review}")
 ])
 
@@ -45,7 +45,7 @@ def coder_agent(state: ProductionState) -> ProductionState:
     try:
         response = llm.invoke(
             coder_prompt.format_messages(input=state["input"]))
-        return {"code": response.content, "retry_count": 0}
+        return {"code": response.content}
     except Exception as e:
         print(f"Code generation failed: {e}")
         return {"retry_count": state.get("retry_count", 0) + 1}
@@ -73,7 +73,8 @@ def approval_agent(state: ProductionState) -> ProductionState:
         else:
             print(f"❌ Code rejected: {decision.feedback}")
 
-        return {"approved": decision.approved}
+        return {"approved": decision.approved, "retry_count": state.get("retry_count", 0) + 1 if not decision.approved else 0}
+
     except Exception as e:
         print(f"Approval process failed: {e}")
         return {"approved": False, "retry_count": state.get("retry_count", 0) + 1}
