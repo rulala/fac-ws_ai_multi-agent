@@ -5,7 +5,6 @@ from typing import Dict,  Any
 
 
 def extract_code_from_response(response_text: str) -> str:
-    """Extract Python code from markdown code blocks or return raw text."""
     if not response_text:
         return ""
 
@@ -15,7 +14,6 @@ def extract_code_from_response(response_text: str) -> str:
 
 
 def sanitise_filename(text: str) -> str:
-    """Convert text to safe filename."""
     sanitised = re.sub(r'[^\w\s-]', '', text).strip()
     return re.sub(r'[-\s]+', '_', sanitised).lower()
 
@@ -28,12 +26,10 @@ class CodebaseGenerator:
         self.folder_name = f"generated/{pattern_name}_{self.timestamp}"
 
     def create_folder(self) -> str:
-        """Create timestamped folder for the codebase."""
         os.makedirs(self.folder_name, exist_ok=True)
         return self.folder_name
 
     def write_python_file(self, filename: str, content: str) -> None:
-        """Write Python code to file, extracting from markdown if needed."""
         code = extract_code_from_response(content)
         if code:
             filepath = os.path.join(self.folder_name, f"{filename}.py")
@@ -41,7 +37,6 @@ class CodebaseGenerator:
                 f.write(code)
 
     def write_text_file(self, filename: str, content: str) -> None:
-        """Write raw text to file."""
         filepath = os.path.join(self.folder_name, filename)
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(content)
@@ -54,6 +49,22 @@ class SequentialCodebase(CodebaseGenerator):
         self.write_python_file("original_code", result.get('code', ''))
         self.write_python_file(
             "refactored_code", result.get('refactored_code', ''))
+
+        if result.get('unit_tests'):
+            self.write_python_file("unit_tests", result.get('unit_tests', ''))
+
+        unit_tests_section = ""
+        if result.get('unit_tests'):
+            unit_tests_section = f"""
+
+## Unit Tests
+```python
+{extract_code_from_response(result.get('unit_tests', 'No unit tests generated'))}
+```"""
+
+        files_generated = "- `original_code.py` - Initial implementation\n- `refactored_code.py` - Improved version based on review"
+        if result.get('unit_tests'):
+            files_generated += "\n- `unit_tests.py` - Comprehensive test suite"
 
         audit_content = f"""# Sequential Workflow Audit Trail
 
@@ -72,11 +83,10 @@ class SequentialCodebase(CodebaseGenerator):
 ## Refactored Code
 ```python
 {extract_code_from_response(result.get('refactored_code', 'No refactored code available'))}
-```
+```{unit_tests_section}
 
 ## Files Generated
-- `original_code.py` - Initial implementation
-- `refactored_code.py` - Improved version based on review
+{files_generated}
 
 ---
 *Generated using LangGraph Sequential Workflow Pattern*
@@ -146,7 +156,6 @@ class ParallelCodebase(CodebaseGenerator):
 
         self.write_python_file("main_code", result.get('code', ''))
 
-        # Create separate synthesis report file
         synthesis_content = f"""# Code Analysis Synthesis Report
 
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
@@ -203,7 +212,6 @@ class SupervisorCodebase(CodebaseGenerator):
 
         self.write_python_file("main_code", result.get('code', ''))
 
-        # Create separate final analysis file
         final_analysis_content = f"""# Expert Analysis & Recommendations
 
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
@@ -272,13 +280,11 @@ class EvaluatorCodebase(CodebaseGenerator):
         self.write_python_file("final_code", result.get(
             'final_code', result.get('code', '')))
 
-        # Handle simplified evaluation structure
         current_eval = result.get('current_evaluation', {})
         final_score = current_eval.get('score', 'N/A')
         final_feedback = current_eval.get('feedback', 'No feedback available')
         iteration_count = result.get('iteration_count', 0)
 
-        # Create simple iteration history section
         history_section = f"""## Optimisation Summary
 - **Total Iterations:** {iteration_count}
 - **Final Quality Score:** {final_score}/10
