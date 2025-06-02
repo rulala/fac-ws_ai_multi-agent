@@ -4,7 +4,7 @@ Learn to build sophisticated multi-agent systems by mastering six architectural 
 
 ## Workshop Philosophy
 
-This workshop teaches LangGraph through architectural patterns, not copy-paste code. You'll understand **when** and **why** to choose different approaches, progressing from simple workflows to sophisticated multi-agent systems.
+This workshop teaches LangGraph through architectural patterns, not code syntax - use AI for this. You'll understand **when** and **why** to choose different approaches, progressing from simple workflows to sophisticated multi-agent systems.
 
 ## Prerequisites
 
