@@ -14,7 +14,7 @@ This workshop teaches LangGraph through architectural patterns, not code syntax 
 - Python 3.9+ or Anaconda/Miniconda
 - OpenAI API key
 - Basic Python and AI understanding
-- Review [PATTERNS.md](PATTERNS.md) before starting
+- Review [Multi-Agent Patterns: Practical Guide](PATTERNS.md) before starting
 
 ## Quick Start
 
