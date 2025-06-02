@@ -1,6 +1,6 @@
 # Building Multi-Agent Workflows with LangGraph Workshop
 
-A progressive, hands-on tutorial for building multi-agent code review systems using LangGraph architectural patterns.
+Learn to build sophisticated multi-agent systems by mastering six architectural patterns, progressing from simple linear workflows to production-ready systems.
 
 ## Workshop Philosophy
 
@@ -10,8 +10,8 @@ This workshop teaches LangGraph through architectural patterns, not copy-paste c
 
 - Python 3.9+ or Anaconda/Miniconda
 - OpenAI API key
-- Basic understanding of Python and AI concepts
-- Read about the [architectural patterns](PATTERNS.md)
+- Basic Python and AI understanding
+- Review [PATTERNS.md](PATTERNS.md) before starting
 
 ## Quick Start
 
@@ -33,201 +33,220 @@ This workshop teaches LangGraph through architectural patterns, not copy-paste c
 
 2. **Setup environment**
 
-   - **with conda** (recommended):
+   - **with conda** (recommended for Mac and Linux):
 
    ```bash
    conda env create -f environment.yml
    conda activate multi-agent
    ```
 
-   - **with pip only:**
+   - **with pip only** (easier for Windows):
 
    ```bash
    pip install langchain-openai langgraph python-dotenv
    ```
 
-## Workshop Structure
+3. **Create `.env` file**:
+   ```
+   OPENAI_API_KEY=your_key_here
+   ```
 
-### Part 1: Foundation - Simple Sequential Workflow
+## How This Workshop Works
 
-**Pattern**: Linear code review pipeline
-**When to use**: Predictable, sequential tasks
-**File**: `01_sequential_workflow.py`
+1. **Two versions per pattern**: Start with `patterns_simple/` to understand concepts, then do exercises in `patterns/`
+2. **Six patterns**: Each builds on previous concepts
+3. **Four exercises per pattern**: Modify the code to complete each exercise
+4. **Generated output**: Check `generated/` folder after each run
 
-Build a basic coder → reviewer → refactorer pipeline. Learn LangGraph fundamentals: states, nodes, edges.
+## Approach Each Pattern
 
-#### Key Concepts
+For each pattern:
 
-- StateGraph basics
-- Sequential execution
-- State management
+1. **Read** the simple version in `patterns_simple/`
+2. **Run** the full version in `patterns/`
+3. **Examine** the generated output in `generated/`
+4. **Complete** the 4 exercises by modifying the code
+5. **Discuss** when you'd use this pattern vs others
 
-#### Challenges
+## The Six Patterns
 
-1. Try different coding tasks
-2. Modify prompts to change agent behaviour
-3. Add a 'tester' agent that writes unit tests
-4. **Discussion**: When would you use this pattern vs others?
+### Pattern 1: Sequential Workflow
 
-### Part 2: Adding Intelligence - Conditional Routing
+**File**: `patterns/01_sequential_workflow.py`  
+**Concept**: Linear pipeline (coder → reviewer → refactorer)  
+**Use case**: Predictable, step-by-step processes
 
-**Pattern**: Routing based on code quality
-**When to use**: Different paths based on evaluation
-**File**: `02_conditional_routing.py`
+**Run and explore**:
 
-Add quality gates that route code based on review scores. Poor code gets additional refinement cycles.
-
-#### Key Concepts
-
-- Conditional edges
-- Quality evaluation
-- Branching logic
-
-#### Challenges
-
-1. Adjust quality threshold and see how it affects iterations
-2. Add different quality criteria (security, performance)
-3. Create a 'fast track' for simple code that skips some steps
-4. **Discussion**: When would conditional routing be better than sequential flow?
-
-### Part 3: Efficiency - Parallel Processing
-
-**Pattern**: Concurrent analysis
-**When to use**: Independent, parallelisable tasks
-**File**: `03_parallel_processing.py`
-
-Run code analysis, security scanning, and performance checks simultaneously.
-
-#### Key Concepts
-
-- Parallel execution
-- Result aggregation
-- Performance optimisation
-
-#### Challenges
-
-1. Add a testing agent that runs in parallel
-2. Compare execution time vs sequential approach
-3. Add error handling for failed parallel tasks
-4. **Discussion**: When is parallel processing most beneficial?
-
-### Part 4: Specialisation - Multi-Agent Supervisor
-
-**Pattern**: Supervisor with specialised agents
-**When to use**: Complex tasks requiring domain expertise
-**File**: `04_supervisor_agents.py`
-
-A supervisor coordinates specialised agents: security expert, performance analyst, code quality checker.
-
-#### Key Concepts
-
-- Agent specialisation
-- Supervisor pattern
-- Dynamic agent selection
-
-#### Challenges
-
-1. Add domain-specific experts (e.g., database, API design)
-2. Make supervisor more intelligent about expert selection
-3. Add expert-to-expert communication
-4. **Discussion**: When is supervision better than parallel processing?
-
-### Part 5: Reliability - Evaluator-Optimiser Loop
-
-**Pattern**: Continuous improvement through feedback
-**When to use**: When output quality can be iteratively improved
-**File**: `05_evaluator_optimiser.py`
-
-Add a feedback loop where an evaluator scores outputs and provides improvement suggestions.
-
-#### Key Concepts
-
-- Feedback loops
-- Quality assessment
-- Iterative refinement
-
-#### Challenges
-
-1. Add specific evaluation criteria (e.g., test coverage)
-2. Create different optimisation strategies based on issue type
-3. Add human-in-the-loop evaluation
-4. **Discussion**: When is iterative optimisation most valuable?
-
-### Part 6: Production Readiness
-
-**Pattern**: Error handling, persistence, monitoring
-**When to use**: Real-world deployment
-**File**: `06_production_ready.py`
-
-Add error handling, state persistence, human-in-the-loop, and monitoring.
-
-#### Key Concepts
-
-- Error recovery
-- State persistence
-- Human oversight
-- Monitoring and debugging
-
-#### Challenges
-
-1. Add metrics collection and monitoring
-2. Implement real human-in-the-loop with API
-3. Add deployment automation
-4. Create rollback mechanisms
-
-## Hands-On Exercises
-
-Each part includes:
-
-1. **Build**: Implement the pattern
-2. **Experiment**: Modify prompts, add features
-3. **Analyse**: Compare with previous approaches
-4. **Decide**: When would you use this pattern?
-
-## Pattern Decision Guide
-
-| Pattern             | Best For                   | Avoid When              |
-| ------------------- | -------------------------- | ----------------------- |
-| Sequential          | Predictable workflows      | Dynamic requirements    |
-| Conditional         | Quality-dependent paths    | Complex decision trees  |
-| Parallel            | Independent tasks          | Sequential dependencies |
-| Supervisor          | Complex, specialised tasks | Simple workflows        |
-| Evaluator-Optimiser | Improvable outputs         | Time-critical tasks     |
-
-## Architecture Progression
-
-```
-Sequential → Conditional → Parallel → Multi-Agent → Self-Improving
-   ↓            ↓           ↓          ↓            ↓
- Simple      Quality     Speed    Expertise    Excellence
+```bash
+python patterns/01_sequential_workflow.py
+# Check generated/ folder for output
 ```
 
-## Real-World Applications
+**Your 4 Exercises** (modify the code):
 
-- **Sequential**: Basic automation workflows
-- **Conditional**: Content moderation systems
-- **Parallel**: Document processing pipelines
-- **Supervisor**: Complex analysis platforms
-- **Evaluator-Optimiser**: AI content generation
+1. **Add a tester agent**: Create `tester_agent` function that generates unit tests. Add node after refactorer.
+2. **Change focus**: Modify all prompts to emphasise security vulnerabilities instead of general quality.
+3. **Add persistence**: Save state between nodes to a JSON file for debugging.
+4. **Measure performance**: Add timing to each node, print execution summary.
+
+### Pattern 2: Conditional Routing
+
+**File**: `patterns/02_conditional_routing.py`  
+**Concept**: Quality gates determine workflow paths  
+**Use case**: Iterative improvement based on evaluation
+
+**Run and explore**:
+
+```bash
+python patterns/02_conditional_routing.py
+# Note iteration count in output
+```
+
+**Your 4 Exercises** (modify the code):
+
+1. **Adjust threshold**: Change `quality_threshold = 7` to 9. How many iterations now?
+2. **Add fast track**: If initial score ≥ 9, skip refactoring entirely.
+3. **Multi-criteria evaluation**: Score separately for security, performance, readability. Route based on lowest.
+4. **Implement backoff**: Make `max_iterations` increase with each retry (3, 5, 7).
+
+### Pattern 3: Parallel Processing
+
+**File**: `patterns/03_parallel_processing.py`  
+**Concept**: Concurrent analysis by multiple specialists  
+**Use case**: Independent tasks that can run simultaneously
+
+**Run and explore**:
+
+```bash
+python patterns/03_parallel_processing.py
+# Check SYNTHESIS_REPORT.md
+```
+
+**Your 4 Exercises** (modify the code):
+
+1. **Add documentation agent**: Create `documentation_agent` that generates docstrings. Run in parallel.
+2. **Add timing**: Import `time`, measure sequential vs parallel execution.
+3. **Handle failures**: Wrap agents in try/except, continue if one fails.
+4. **Weighted synthesis**: Give security 2x weight in final recommendations.
+
+### Pattern 4: Supervisor Agents
+
+**File**: `patterns/04_supervisor_agents.py`  
+**Concept**: Intelligent coordination of specialist agents  
+**Use case**: Complex tasks requiring dynamic expertise
+
+**Run and explore**:
+
+```bash
+python patterns/04_supervisor_agents.py
+# Check EXPERT_ANALYSIS.md
+```
+
+**Your 4 Exercises** (modify the code):
+
+1. **Add database expert**: Create `database_expert_agent` for SQL/schema review. Update supervisor logic.
+2. **Smart routing**: Make supervisor check code content (e.g., "if 'sql' in code: route to database expert").
+3. **Expert collaboration**: Let security expert see quality report before finalising.
+4. **Add priorities**: Supervisor should consult security expert first for authentication tasks.
+
+### Pattern 5: Evaluator-Optimiser
+
+**File**: `patterns/05_evaluator_optimiser.py`  
+**Concept**: Continuous improvement through feedback loops  
+**Use case**: Iteratively refinable outputs
+
+**Run and explore**:
+
+```bash
+python patterns/05_evaluator_optimiser.py
+# Watch score progression
+```
+
+**Your 4 Exercises** (modify the code):
+
+1. **Track metrics**: Add complexity score using `radon` library. Optimise for both quality and simplicity.
+2. **Targeted optimisation**: If feedback mentions "performance", use performance-specific optimiser.
+3. **Detect plateau**: If score doesn't improve for 2 iterations, stop early.
+4. **History tracking**: Store all iterations in state, generate comparison chart.
+
+### Pattern 6: Production Ready
+
+**File**: `patterns/06_production_ready.py`  
+**Concept**: Error handling, retries, and approval gates  
+**Use case**: Real-world deployment requirements
+
+**Run and explore**:
+
+```bash
+python patterns/06_production_ready.py
+# Note retry behaviour
+```
+
+**Your 4 Exercises** (modify the code):
+
+1. **Add monitoring**: Log each node entry/exit with timestamps to `workflow.log`.
+2. **Circuit breaker**: After 2 consecutive failures, skip to manual review.
+3. **Rollback state**: Save last approved version, revert if new version fails.
+4. **Compliance check**: Add `compliance_agent` that checks regulatory requirements before approval.
+
+## Output Structure
+
+Full pattern implementations generate timestamped folders in `generated/`:
+
+```
+generated/
+└── 01_sequential_workflow_20250602_143022/
+    ├── original_code.py
+    ├── refactored_code.py
+    └── AUDIT_TRAIL.md
+```
+
+## Key Learning Progression
+
+1. **Understand**: Run simple version, trace execution flow
+2. **Experiment**: Complete the 4 exercises for each pattern
+3. **Analyse**: Compare patterns - when would you choose each?
+4. **Build**: Combine patterns for your use case
+
+## Workshop Tips
+
+- Start with `patterns_simple/` to understand core concepts
+- Use `patterns/` for exercises - they have proper output handling
+- Generated code appears in `generated/` folder with timestamps
+- Each pattern builds on previous concepts
+- Focus on **when** to use each pattern, not just **how**
+
+## Pattern Selection Guide
+
+| Your Need                 | Use This Pattern |
+| ------------------------- | ---------------- |
+| Step-by-step process      | Sequential       |
+| Quality-based branching   | Conditional      |
+| Speed through parallelism | Parallel         |
+| Complex coordination      | Supervisor       |
+| Iterative improvement     | Evaluator        |
+| Production deployment     | Production Ready |
 
 ## Next Steps
 
-After completing this workshop:
+After completing all exercises:
 
-1. **Experiment** with combining patterns
-2. **Build** your own use case using appropriate patterns
-3. **Deploy** using LangGraph Platform
-4. **Monitor** and optimise in production
+1. Identify your use case's requirements
+2. Select appropriate pattern(s)
+3. Combine patterns if needed
+4. Deploy using LangGraph Platform
 
-## Resources
+## Debugging
 
-- [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
-- [LangChain Academy](https://github.com/langchain-ai/langchain-academy)
-- [Production Examples](https://blog.langchain.dev/top-5-langgraph-agents-in-production-2024/)
+- Check `.env` file for API key
+- Ensure conda environment is activated
+- Generated files appear in `generated/` folder
+- Each run creates new timestamped folder
 
 ---
 
-**Remember**: Choose the simplest pattern that solves your problem. Complexity should be justified by requirements, not excitement about features.
+**Remember**: Master the patterns, then combine them creatively. The best solution uses the simplest pattern that meets your requirements.
 
 ## Author
 
