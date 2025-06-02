@@ -9,13 +9,24 @@ graph LR
     C --> D[Supervisor]
     D --> E[Evaluator]
     E --> F[Production]
+    F --> G[Deploy]
+```
 
-    A -.->|Simple| B
-    B -.->|+ Intelligence| C
-    C -.->|+ Speed| D
-    D -.->|+ Expertise| E
-    E -.->|+ Quality| F
-    F -.->|+ Reliability| G[Deploy]
+```mermaid
+graph LR
+    Start[Start Simple] --> Need{What do you need?}
+
+    Need -->|Quality Gates| AddIntelligence[Add Intelligence<br/>Conditional Routing]
+    Need -->|Speed| ScalePerformance[Scale Performance<br/>Parallel Processing]
+    Need -->|Domain Knowledge| GainExpertise[Gain Expertise<br/>Supervisor Agents]
+    Need -->|Perfect Output| EnsureQuality[Ensure Quality<br/>Evaluator-Optimiser]
+    Need -->|Real Deployment| DeploySafely[Deploy Safely<br/>Production Ready]
+
+    AddIntelligence --> Need
+    ScalePerformance --> Need
+    GainExpertise --> Need
+    EnsureQuality --> Need
+    DeploySafely --> Production[Production System]
 ```
 
 ## Quick Pattern Selection
