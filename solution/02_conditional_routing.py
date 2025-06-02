@@ -12,7 +12,10 @@ class CodeReviewState(TypedDict):
     input: str
     code: list
     review: str
-    quality_score: int
+    security_score: int
+    performance_score: int
+    readability_score: int
+    lowest_score: int
     iteration_count: int
 
 
@@ -24,19 +27,29 @@ coder_prompt = ChatPromptTemplate.from_messages([
 ])
 
 reviewer_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Code Reviewer. Provide feedback on code quality and best practices."),
+    ("system", "You are a Code Reviewer. Provide feedback on code quality and best practices. In your review, comment on security, performance, and readability."),
     ("human", "Review this code:\n{code}")
 ])
 
-evaluator_prompt = ChatPromptTemplate.from_messages([
-    ("system", "Rate this code from 1-10 based on quality. Respond with just the number."),
-    ("human", "Code:\n{code}\n\nReview:\n{review}")
+security_evaluator_prompt = ChatPromptTemplate.from_messages([
+    ("system", "Rate this code's SECURITY from 1-10. Consider input validation, injection risks, authentication. Respond with just the number."),
+    ("human", "Code:\n{code}")
+])
+
+performance_evaluator_prompt = ChatPromptTemplate.from_messages([
+    ("system", "Rate this code's PERFORMANCE from 1-10. Consider algorithmic complexity, efficiency, resource usage. Respond with just the number."),
+    ("human", "Code:\n{code}")
+])
+
+readability_evaluator_prompt = ChatPromptTemplate.from_messages([
+    ("system", "Rate this code's READABILITY from 1-10. Consider naming, structure, documentation, clarity. Respond with just the number."),
+    ("human", "Code:\n{code}")
 ])
 
 refactorer_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Refactoring Expert. Improve the code based on review feedback."),
+    ("system", "You are a Refactoring Expert. Improve the code based on review feedback, focusing on the weakest area."),
     ("human",
-     "Code:\n{code}\n\nFeedback:\n{review}\n\nRefactor to address issues:")
+     "Code:\n{code}\n\nFeedback:\n{review}\n\nScores - Security: {security}, Performance: {performance}, Readability: {readability}\n\nRefactor to address the lowest scoring area:")
 ])
 
 
@@ -51,22 +64,52 @@ def reviewer_agent(state: CodeReviewState) -> CodeReviewState:
     return {"review": response.content}
 
 
-def quality_evaluator_agent(state: CodeReviewState) -> CodeReviewState:
+def multi_criteria_evaluator_agent(state: CodeReviewState) -> CodeReviewState:
     current_code = state["code"][-1] if state["code"] else ""
-    response = llm.invoke(evaluator_prompt.format_messages(
-        code=current_code, review=state["review"]
-    ))
+
+    security_response = llm.invoke(
+        security_evaluator_prompt.format_messages(code=current_code))
+    performance_response = llm.invoke(
+        performance_evaluator_prompt.format_messages(code=current_code))
+    readability_response = llm.invoke(
+        readability_evaluator_prompt.format_messages(code=current_code))
+
     try:
-        score = int(response.content.strip())
+        security_score = int(security_response.content.strip())
     except:
-        score = 5
-    return {"quality_score": score}
+        security_score = 5
+
+    try:
+        performance_score = int(performance_response.content.strip())
+    except:
+        performance_score = 5
+
+    try:
+        readability_score = int(readability_response.content.strip())
+    except:
+        readability_score = 5
+
+    lowest_score = min(security_score, performance_score, readability_score)
+
+    print(
+        f"📊 Scores - Security: {security_score}, Performance: {performance_score}, Readability: {readability_score} (Lowest: {lowest_score})")
+
+    return {
+        "security_score": security_score,
+        "performance_score": performance_score,
+        "readability_score": readability_score,
+        "lowest_score": lowest_score
+    }
 
 
 def refactorer_agent(state: CodeReviewState) -> CodeReviewState:
     current_code = state["code"][-1] if state["code"] else ""
     response = llm.invoke(refactorer_prompt.format_messages(
-        code=current_code, review=state["review"]
+        code=current_code,
+        review=state["review"],
+        security=state["security_score"],
+        performance=state["performance_score"],
+        readability=state["readability_score"]
     ))
     updated_code_list = state["code"] + [response.content]
     return {
@@ -77,17 +120,19 @@ def refactorer_agent(state: CodeReviewState) -> CodeReviewState:
 
 def quality_gate(state: CodeReviewState) -> Literal["refactor", "complete"]:
     quality_threshold = 7
-    fast_track_threshold = 8
+    fast_track_threshold = 9
     max_iterations = 3
 
-    if state["quality_score"] >= fast_track_threshold and state["iteration_count"] == 0:
+    if state["lowest_score"] >= fast_track_threshold and state["iteration_count"] == 0:
         print(
-            f"🚀 Fast track activated! Score {state['quality_score']}/10 - skipping refactoring")
+            f"🚀 Fast track activated! All scores ≥ {fast_track_threshold} - skipping refactoring entirely")
         return "complete"
-    elif state["quality_score"] >= quality_threshold and state["iteration_count"] > 0:
+    elif state["lowest_score"] >= quality_threshold:
+        print(
+            f"✅ All criteria passed! Lowest score: {state['lowest_score']}/10")
         return "complete"
     elif state["iteration_count"] >= max_iterations:
-        print(f"Max iterations reached. Final score: {state['quality_score']}")
+        print(f"Max iterations reached. Lowest score: {state['lowest_score']}")
         return "complete"
     else:
         return "refactor"
@@ -96,18 +141,20 @@ def quality_gate(state: CodeReviewState) -> Literal["refactor", "complete"]:
 builder = StateGraph(CodeReviewState)
 builder.add_node("coder", coder_agent)
 builder.add_node("reviewer", reviewer_agent)
-builder.add_node("quality_evaluator", quality_evaluator_agent)
+builder.add_node("multi_criteria_evaluator", multi_criteria_evaluator_agent)
 builder.add_node("refactorer", refactorer_agent)
 
 builder.add_edge(START, "coder")
 builder.add_edge("coder", "reviewer")
-builder.add_edge("reviewer", "quality_evaluator")
+builder.add_edge("reviewer", "multi_criteria_evaluator")
 builder.add_conditional_edges(
-    "quality_evaluator",
+    "multi_criteria_evaluator",
     quality_gate,
     {"refactor": "refactorer", "complete": END}
 )
 builder.add_edge("refactorer", "reviewer")
+
+workflow = builder.compile()
 
 workflow = builder.compile()
 
