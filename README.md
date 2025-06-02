@@ -123,8 +123,8 @@ python patterns/02_conditional_routing.py
 
 **Your 4 Exercises** (modify the code):
 
-1. **Adjust threshold**: Change `quality_threshold = 7` to 9. How many iterations now?
-2. **Add fast track**: If initial score ≥ 9, skip refactoring entirely.
+1. **Adjust threshold**: Change `quality_threshold = 7` to 9. How many iterations now? Play around with `max_iterations` too.
+2. **Add fast track**: If initial score ≥ 8, skip refactoring entirely.
 3. **Multi-criteria evaluation**: Score separately for security, performance, readability. Route based on lowest.
 4. **Implement backoff**: Make `max_iterations` increase with each retry (3, 5, 7).
 
