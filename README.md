@@ -200,7 +200,7 @@ python patterns/06_production_ready.py
 > - Retry mechanisms
 > - Approval workflows
 > - State persistence
-> - Monitoring and logging
+> - Monitoring and logging <br />
 >   Think of it as "how to make any pattern production-ready" rather than a distinct way of organising agents.
 
 ## Output Structure
