@@ -222,7 +222,7 @@ def should_continue(state):
 - **Use cases**: Production systems, Enterprise deployment, Mission-critical tasks
 
 ```mermaid
-graph LR
+graph TD
     START --> Coder
     Coder --> ErrorCheck{Error?}
     ErrorCheck -->|Yes| HandleErrors
