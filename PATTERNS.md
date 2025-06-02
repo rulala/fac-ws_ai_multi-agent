@@ -5,11 +5,11 @@
 ```mermaid
 graph LR
     Start[Prototype] -.->|Simple| A[Sequential]
-    A -.->|+ Intelligence| B[Conditional]
-    B -.->|+ Speed| C[Parallel]
-    C -.->|+ Expertise| D[Supervisor]
-    D -.->|+ Quality| E[Evaluator]
-    E -.->|+ Deploy| F[Production]
+    A -.->|Intelligence| B[Conditional]
+    B -.->|Speed| C[Parallel]
+    C -.->|Expertise| D[Supervisor]
+    D -.->|Quality| E[Evaluator]
+    E -.->|Deploy| F[Production]
 ```
 
 ### Pattern Decision Logic
