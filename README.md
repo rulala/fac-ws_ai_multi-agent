@@ -245,6 +245,13 @@ generated/
 | Iterative improvement               | Evaluator             |
 | Production deployment (any pattern) | + Production Concerns |
 
+## Resources
+
+- [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
+- [LangChain Academy](https://github.com/langchain-ai/langchain-academy)
+- [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents/)
+- [Production Examples](https://blog.langchain.dev/top-5-langgraph-agents-in-production-2024/)
+
 ## Next Steps
 
 After completing all exercises:
@@ -264,7 +271,7 @@ After completing all exercises:
 
 ---
 
-**Remember**: Master the architectural patterns (1-5), then apply production concerns (6) to make them deployment-ready. The best solution uses the simplest pattern that meets your requirements.
+**Remember**: Master the patterns, then combine them creatively. Apply production concerns to make them deployment-ready. The best solution uses the simplest pattern that meets your requirements.
 
 ## Author
 
