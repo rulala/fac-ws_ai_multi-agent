@@ -12,6 +12,8 @@ graph LR
     F --> G[Deploy]
 ```
 
+### Pattern Decision Logic
+
 ```mermaid
 graph LR
     Start[Start Simple] --> Need{What do you need?}
@@ -28,17 +30,6 @@ graph LR
     EnsureQuality --> Need
     DeploySafely --> Production[Production System]
 ```
-
-## Quick Pattern Selection
-
-| If you need...            | Use this pattern |
-| ------------------------- | ---------------- |
-| Step-by-step execution    | **Sequential**   |
-| Retry until quality met   | **Conditional**  |
-| Speed via parallelism     | **Parallel**     |
-| Dynamic expert selection  | **Supervisor**   |
-| Iterative refinement      | **Evaluator**    |
-| Error recovery & approval | **Production**   |
 
 ## Pattern 1: Sequential Workflow
 
@@ -327,45 +318,6 @@ Patterns can be mixed:
 1. **Conditional + Parallel**: Quality gate triggers parallel analysis
 2. **Supervisor + Evaluator**: Supervisor picks experts, evaluator ensures quality
 3. **Sequential + Production**: Basic flow with error handling
-
-## Pattern Evolution
-
-```mermaid
-graph LR
-    A[Start Simple] --> B[Add Intelligence]
-    B --> C[Scale Performance]
-    C --> D[Gain Expertise]
-    D --> E[Ensure Quality]
-    E --> F[Deploy Safely]
-```
-
-```mermaid
-graph LR
-    A[Sequential] --> B[Conditional]
-    B --> C[Parallel]
-    C --> D[Supervisor]
-    D --> E[Evaluator]
-    E --> F[Production]
-```
-
-### Evolution Principles
-
-```mermaid
-graph TD
-    Start[Start Simple] --> Need{What do you need?}
-
-    Need -->|Quality Gates| AddIntelligence[Add Intelligence<br/>Conditional Routing]
-    Need -->|Speed| ScalePerformance[Scale Performance<br/>Parallel Processing]
-    Need -->|Domain Knowledge| GainExpertise[Gain Expertise<br/>Supervisor Agents]
-    Need -->|Perfect Output| EnsureQuality[Ensure Quality<br/>Evaluator-Optimiser]
-    Need -->|Real Deployment| DeploySafely[Deploy Safely<br/>Production Ready]
-
-    AddIntelligence --> Need
-    ScalePerformance --> Need
-    GainExpertise --> Need
-    EnsureQuality --> Need
-    DeploySafely --> Production[Production System]
-```
 
 ## Decision Matrix
 
