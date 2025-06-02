@@ -17,6 +17,8 @@ class CodeReviewState(TypedDict):
     readability_score: int
     lowest_score: int
     iteration_count: int
+    best_code_index: int
+    best_lowest_score: int
 
 
 llm = ChatOpenAI(model="gpt-4.1-nano")
@@ -90,15 +92,26 @@ def multi_criteria_evaluator_agent(state: CodeReviewState) -> CodeReviewState:
         readability_score = 5
 
     lowest_score = min(security_score, performance_score, readability_score)
+    current_code_index = len(state["code"]) - 1
 
     print(
         f"📊 Scores - Security: {security_score}, Performance: {performance_score}, Readability: {readability_score} (Lowest: {lowest_score})")
+
+    best_code_index = state.get("best_code_index", 0)
+    best_lowest_score = state.get("best_lowest_score", 0)
+    if lowest_score > best_lowest_score:
+        best_code_index = current_code_index
+        best_lowest_score = lowest_score
+        print(
+            f"🏆 New best code found! Score: {lowest_score}/10")
 
     return {
         "security_score": security_score,
         "performance_score": performance_score,
         "readability_score": readability_score,
-        "lowest_score": lowest_score
+        "lowest_score": lowest_score,
+        "best_code_index": best_code_index,
+        "best_lowest_score": best_lowest_score
     }
 
 
@@ -116,6 +129,20 @@ def refactorer_agent(state: CodeReviewState) -> CodeReviewState:
         "code": updated_code_list,
         "iteration_count": state["iteration_count"] + 1
     }
+
+
+def finalise_best_code(state: CodeReviewState) -> CodeReviewState:
+    best_index = state.get("best_code_index", len(state["code"]) - 1)
+    best_code = state["code"][best_index]
+
+    # Replace the code list with just the best version for output
+    final_code_list = [best_code]
+
+    if best_index != len(state["code"]) - 1:
+        print(
+            f"🎯 Selected best code from iteration {best_index} (score: {state['best_lowest_score']}/10) instead of final iteration")
+
+    return {"code": final_code_list}
 
 
 def quality_gate(state: CodeReviewState) -> Literal["refactor", "complete"]:
@@ -143,6 +170,7 @@ builder.add_node("coder", coder_agent)
 builder.add_node("reviewer", reviewer_agent)
 builder.add_node("multi_criteria_evaluator", multi_criteria_evaluator_agent)
 builder.add_node("refactorer", refactorer_agent)
+builder.add_node("finalise_best_code", finalise_best_code)
 
 builder.add_edge(START, "coder")
 builder.add_edge("coder", "reviewer")
@@ -150,11 +178,10 @@ builder.add_edge("reviewer", "multi_criteria_evaluator")
 builder.add_conditional_edges(
     "multi_criteria_evaluator",
     quality_gate,
-    {"refactor": "refactorer", "complete": END}
+    {"refactor": "refactorer", "complete": "finalise_best_code"}
 )
 builder.add_edge("refactorer", "reviewer")
-
-workflow = builder.compile()
+builder.add_edge("finalise_best_code", END)
 
 workflow = builder.compile()
 
