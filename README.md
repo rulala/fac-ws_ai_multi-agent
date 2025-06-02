@@ -259,8 +259,9 @@ After completing all exercises:
 1. Identify your use case's requirements
 2. Select appropriate architectural pattern(s) (1-5)
 3. Combine patterns if needed
-4. Apply production-ready techniques from Pattern 6
-5. Deploy using LangGraph Platform
+4. Experiment using different models for different agents (perhaps a reasoning model for reviews etc)
+5. Apply production-ready techniques from Pattern 6
+6. Deploy using [LangGraph Platform](https://langchain-ai.github.io/langgraph/concepts/langgraph_platform/)
 
 ## Debugging
 
