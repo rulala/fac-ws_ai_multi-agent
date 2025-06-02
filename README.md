@@ -93,10 +93,25 @@ python patterns/01_sequential_workflow.py
 3. **Add persistence**: Save state between nodes to a JSON file for debugging.
 4. **Measure performance**: Add timing to each node, print execution summary.
 
+> [!TIP]
+> Exercise 4 requires a @time_node_execution decorator function to wrap each agent that will print progress log and timings as below:
+>
+> ```bash
+> 🔄 Starting coder...
+> ✅ coder completed in 6.24s
+> 🔄 Starting reviewer...
+> ✅ reviewer completed in 6.39s
+> 🔄 Starting refactorer...
+> ✅ refactorer completed in 3.47s
+> 🔄 Starting tester...
+> ✅ tester completed in 12.61s
+> ✅ Sequential codebase created in: generated/01_sequential_workflow_20250602_162810/
+> ```
+
 ### Pattern 2: Conditional Routing
 
-**File**: `patterns/02_conditional_routing.py`  
-**Concept**: Quality gates determine workflow paths  
+**File**: `patterns/02_conditional_routing.py`
+**Concept**: Quality gates determine workflow paths
 **Use case**: Iterative improvement based on evaluation
 
 **Run and explore**:
