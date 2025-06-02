@@ -94,7 +94,7 @@ python patterns/01_sequential_workflow.py
 4. **Measure performance**: Add timing to each node, print execution summary.
 
 > [!TIP]
-> Exercise 4 requires a @time_node_execution decorator function to wrap each agent that will print progress log and timings as below:
+> Exercise 4 requires a @time_node_execution decorator function to wrap each agent that will print logs and timings as below:
 >
 > ```bash
 > 🔄 Starting coder...
