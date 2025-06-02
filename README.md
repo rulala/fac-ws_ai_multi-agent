@@ -128,10 +128,25 @@ python patterns/02_conditional_routing.py
 3. **Multi-criteria evaluation**: Score separately for security, performance, readability. Route based on lowest.
 4. **Final code selection**: Update logic so that the final code that is chosen after timeout is the one with the highest `lowest_score` instead of last code generated.
 
+> [!TIP]
+> Exercise 3 requires a single multi_criteria_evaluator_agent to handle separate scores. Exercise 4 requires a finalize_best_code function and node plus **state fields `best_code_index` and `best_lowest_score` to track the highest-scoring code version**. It should log something like this:
+>
+> ```bash
+> 📊 Scores - Security: 1, Performance: 7, Readability: 8 (Lowest: 1)
+> 🏆 New best code found! Score: 1/10
+> 📊 Scores - Security: 3, Performance: 3, Readability: 8 (Lowest: 3)
+> 🏆 New best code found! Score: 3/10
+> 📊 Scores - Security: 3, Performance: 3, Readability: 8 (Lowest: 3)
+> 📊 Scores - Security: 2, Performance: 8, Readability: 8 (Lowest: 2)
+> Max iterations reached. Best score achieved: 3/10
+> 🎯 Selected best code from iteration 1 (score: 3/10) instead of final iteration
+> ✅ Conditional routing codebase created in: generated/02_conditional_routing_20250602_182427/
+> ```
+
 ### Pattern 3: Parallel Processing
 
-**File**: `patterns/03_parallel_processing.py`  
-**Concept**: Concurrent analysis by multiple specialists  
+**File**: `patterns/03_parallel_processing.py`
+**Concept**: Concurrent analysis by multiple specialists
 **Use case**: Independent tasks that can run simultaneously
 
 **Run and explore**:
