@@ -194,7 +194,7 @@ python patterns/06_production_ready.py
 4. **Compliance check**: Add `compliance_agent` that checks regulatory requirements before approval.
 
 > [!IMPORTANT]
-> The "Production Ready" implementation (Pattern 6) is **not an architectural pattern** but rather a set of **operational concerns** that should can be appended to ANY of the architectural patterns (1-5) or chain of patterns when deploying to production. It demonstrates:
+> The "Production Ready" implementation is **not an architectural pattern** but rather a set of **operational concerns** that should can be appended to ANY of the architectural patterns (1-5) or chain of patterns when deploying to production. It demonstrates:
 >
 > - Error handling and recovery
 > - Retry mechanisms
