@@ -7,7 +7,7 @@ Learn to build sophisticated multi-agent systems by mastering six architectural 
 This workshop teaches LangGraph through architectural patterns, not code syntax - use AI for this (although note warning below about LangGraph). You'll understand **when** and **why** to choose different approaches, progressing from simple workflows to sophisticated multi-agent systems.
 
 > [!CAUTION]
-> LangGraph is a relatively recent library that is continuously updated with new syntax, not all LLMs have caught on to this so always cross-check with documentation when unsure. Always ask AI to check latest documentation before generating any code too.
+> LangGraph is a relatively recent library that is continuously updated with new syntax, not all LLMs have caught on to this so always cross-check with documentation when unsure. Ask AI to check latest documentation before generating any code too.
 
 ## Prerequisites
 
