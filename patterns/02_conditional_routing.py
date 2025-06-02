@@ -79,7 +79,8 @@ def quality_gate(state: CodeReviewState) -> Literal["refactor", "complete"]:
     quality_threshold = 7
     max_iterations = 3
 
-    if state["quality_score"] >= quality_threshold:
+    # always at least one round of refactoring by tracking iteration_count (if = 0 will always refactor)
+    if state["quality_score"] >= quality_threshold and state["iteration_count"] > 0:
         return "complete"
     elif state["iteration_count"] >= max_iterations:
         print(f"Max iterations reached. Final score: {state['quality_score']}")
