@@ -19,24 +19,24 @@ class CodeReviewState(TypedDict):
 llm = ChatOpenAI(model="gpt-4.1-nano")
 
 coder_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Senior Software Engineer. Write clean, well-structured Python code based on requirements."),
+    ("system", "You are a Security-Focused Software Engineer. Write Python code with security as the primary concern. Include input validation, error handling, and secure coding practices."),
     ("human", "{input}")
 ])
 
 reviewer_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Code Reviewer. Provide constructive feedback focusing on readability, efficiency, and best practices."),
-    ("human", "Review this code:\n{code}")
+    ("system", "You are a Security Code Reviewer. Identify security vulnerabilities, injection risks, authentication flaws, and data exposure issues. Focus exclusively on security concerns."),
+    ("human", "Security review this code:\n{code}")
 ])
 
 refactorer_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Refactoring Expert. Implement the suggested improvements while maintaining functionality."),
+    ("system", "You are a Security Refactoring Expert. Fix security vulnerabilities identified in the review. Prioritise security over performance or readability."),
     ("human",
-     "Original code:\n{code}\n\nReview feedback:\n{review}\n\nRefactor accordingly:")
+     "Original code:\n{code}\n\nSecurity review:\n{review}\n\nRefactor to address security issues:")
 ])
 
 tester_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Testing Expert. Write comprehensive unit tests using pytest for the given code."),
-    ("human", "Generate unit tests for this code:\n{refactored_code}")
+    ("system", "You are a Security Testing Expert. Write security-focused unit tests using pytest. Include tests for input validation, boundary conditions, injection attempts, and error handling."),
+    ("human", "Generate security tests for this code:\n{refactored_code}")
 ])
 
 
