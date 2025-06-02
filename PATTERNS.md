@@ -34,6 +34,7 @@ graph LR
 ## Pattern 1: Sequential Workflow
 
 - **When to use**: Tasks with fixed steps that must run in order
+- **Workflow**: [Prompt chaining](https://www.anthropic.com/engineering/building-effective-agents#workflow-prompt-chaining)
 - **File**: `01_sequential_workflow.py`
 - **Description**: Linear pipeline: coder → reviewer → refactorer
 - **Best for**: Simple, predictable workflows
@@ -65,6 +66,7 @@ builder.add_edge("refactorer", END)
 ## Pattern 2: Conditional Routing
 
 - **When to use**: Need different paths based on quality/conditions
+- **Workflow**: [Routing](https://www.anthropic.com/engineering/building-effective-agents#workflow-routing)
 - **File**: `02_conditional_routing.py`
 - **Description**: Quality-based routing with improvement loops
 - **Best for**: Quality-dependent workflows
@@ -100,6 +102,7 @@ builder.add_conditional_edges("evaluator", quality_gate,
 ## Pattern 3: Parallel Processing
 
 - **When to use**: Multiple independent analyses needed
+- **Workflow**: [Parallelisation](https://www.anthropic.com/engineering/building-effective-agents#workflow-parallelization)
 - **File**: `03_parallel_processing.py`
 - **Description**: Concurrent analysis by multiple specialists
 - **Best for**: Independent, parallelisable tasks
@@ -135,6 +138,7 @@ builder.add_edge("coder", "style_agent")
 ## Pattern 4: Supervisor Agents
 
 - **When to use**: Dynamic expert selection based on content
+- **Workflow**: [Orchestrator-Workers](https://www.anthropic.com/engineering/building-effective-agents#workflow-orchestrator-workers)
 - **File**: `04_supervisor_agents.py`
 - **Description**: Intelligent coordination of specialist agents
 - **Best for**: Complex tasks requiring expertise
@@ -175,6 +179,7 @@ def route_to_expert(state):
 ## Pattern 5: Evaluator-Optimiser
 
 - **When to use**: Output quality improves with iteration
+- **Workflow**: [Evaluator-Optimiser](https://www.anthropic.com/engineering/building-effective-agents#workflow-evaluator-optimizer)
 - **File**: `05_evaluator_optimiser.py`
 - **Description**: Continuous improvement through feedback loops
 - **Best for**: Iteratively improvable outputs
