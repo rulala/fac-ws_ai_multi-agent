@@ -8,8 +8,12 @@ graph LR
     B --> C[Parallel]
     C --> D[Supervisor]
     D --> E[Evaluator]
-    E --> F[Production]
-    F --> G[Deploy]
+
+    A -.->|Simple| B
+    B -.->|+ Intelligence| C
+    C -.->|+ Speed| D
+    D -.->|+ Expertise| E
+    E -.->|+ Quality| F[Production]
 ```
 
 ### Pattern Decision Logic
