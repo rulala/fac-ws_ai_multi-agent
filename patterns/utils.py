@@ -118,13 +118,14 @@ class ConditionalCodebase(CodebaseGenerator):
 
 """
 
+        # Enhanced multi-criteria scoring section
+        quality_metrics_section = self._build_quality_metrics_section(result)
+
         audit_content = f"""# Conditional Routing Audit Trail
 
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
 **Task:** {self.task}  
 **Pattern:** Conditional Routing
-**Final Quality Score:** {result.get('quality_score', 'N/A')}/10
-**Iterations:** {result.get('iteration_count', 0)}
 
 ## Final Code
 ```python
@@ -134,11 +135,7 @@ class ConditionalCodebase(CodebaseGenerator):
 ## Review Feedback
 {result.get('review', 'No review available')}
 
-## Quality Metrics
-- **Score:** {result.get('quality_score', 'N/A')}/10
-- **Iterations:** {result.get('iteration_count', 0)}
-- **Threshold:** 7/10
-{previous_iterations_section}
+{quality_metrics_section}{previous_iterations_section}
 ## Files Generated
 - `final_code.py` - Quality-approved implementation
 
@@ -148,6 +145,47 @@ class ConditionalCodebase(CodebaseGenerator):
         self.write_text_file("AUDIT_TRAIL.md", audit_content)
         print(
             f"✅ Conditional routing codebase created in: {self.folder_name}/")
+
+    def _build_quality_metrics_section(self, result: Dict[str, Any]) -> str:
+        # Check if we have multi-criteria scores
+        if all(key in result for key in ['security_score', 'performance_score', 'readability_score']):
+            security = result['security_score']
+            performance = result['performance_score']
+            readability = result['readability_score']
+            lowest = result.get('lowest_score', min(
+                security, performance, readability))
+
+            # Create visual score bars
+            def score_bar(score: int) -> str:
+                filled = "█" * score
+                empty = "░" * (10 - score)
+                return f"{filled}{empty} ({score}/10)"
+
+            return f"""## Quality Metrics (Multi-Criteria Evaluation)
+
+| Criterion    | Score | Visual                    | Status |
+|--------------|-------|---------------------------|--------|
+| Security     | {security}/10  | {score_bar(security)}     | {'✅ Pass' if security >= 7 else '❌ Fail'} |
+| Performance  | {performance}/10  | {score_bar(performance)}  | {'✅ Pass' if performance >= 7 else '❌ Fail'} |
+| Readability  | {readability}/10  | {score_bar(readability)}  | {'✅ Pass' if readability >= 7 else '❌ Fail'} |
+| **Overall**  | **{lowest}/10** | **{score_bar(lowest)}** | **{'✅ All Pass' if lowest >= 7 else '❌ Needs Work'}** |
+
+**Evaluation Method:** Lowest score determines overall quality  
+**Iterations:** {result.get('iteration_count', 0)}  
+**Threshold:** 7/10 minimum for all criteria  
+
+"""
+        else:
+            # Fallback to single score display
+            quality_score = result.get('quality_score', 'N/A')
+            iteration_count = result.get('iteration_count', 0)
+
+            return f"""## Quality Metrics
+- **Score:** {quality_score}/10
+- **Iterations:** {iteration_count}
+- **Threshold:** 7/10
+
+"""
 
 
 class ParallelCodebase(CodebaseGenerator):
