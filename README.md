@@ -1,13 +1,13 @@
 # Building Multi-Agent Workflows with LangGraph Workshop
 
-Learn to build sophisticated multi-agent systems by mastering six architectural patterns, progressing from simple linear workflows to production-ready systems.
+Learn to build sophisticated multi-agent systems by mastering five architectural patterns plus production-ready implementation techniques.
 
 ## Workshop Philosophy
 
-This workshop teaches LangGraph through architectural patterns, not code syntax - use AI for this (although note warning below about LangGraph). You'll understand **when** and **why** to choose different approaches, progressing from simple workflows to sophisticated multi-agent systems.
+This workshop teaches LangGraph through architectural patterns, not code syntax. You'll understand **when** and **why** to choose different approaches, progressing from simple workflows to sophisticated multi-agent systems.
 
 > [!CAUTION]
-> LangGraph is a relatively recent library that is continuously updated with new syntax, not all LLMs have caught on to this so always cross-check with documentation when unsure. Ask AI to check latest documentation before generating any code too.
+> LangGraph is a relatively recent library that is continuously updated with new syntax, not all LLMs have caught on to this so always cross-check with documentation when unsure. Ask AI to check latest documentation before generating any code.
 
 ## Prerequisites
 
@@ -57,8 +57,8 @@ This workshop teaches LangGraph through architectural patterns, not code syntax 
 ## How This Workshop Works
 
 1. **Two versions per pattern**: Start with `patterns_simple/` to understand concepts, then do exercises in `patterns/`
-2. **Six patterns**: Each builds on previous concepts
-3. **Four exercises per pattern**: Modify the code to complete each exercise
+2. **Five architectural patterns + production implementation**: Each builds on previous concepts
+3. **Four exercises per file**: Modify the code to complete each exercise
 4. **Generated output**: Check `generated/` folder after each run
 
 ## Approach Each Pattern
@@ -71,7 +71,7 @@ For each pattern:
 4. **Complete** the 4 exercises by modifying the code
 5. **Discuss** when you'd use this pattern vs others
 
-## The Six Patterns
+## The Five Architectural Patterns
 
 ### Pattern 1: Sequential Workflow
 
@@ -173,17 +173,17 @@ python patterns/05_evaluator_optimiser.py
 3. **Detect plateau**: If score doesn't improve for 2 iterations, stop early.
 4. **History tracking**: Store all iterations in state, generate comparison chart.
 
-### Pattern 6: Production Ready
+## STRETCH: Production Ready Implementation
 
 **File**: `patterns/06_production_ready.py`  
-**Concept**: Error handling, retries, and approval gates  
-**Use case**: Real-world deployment requirements
+**Concept**: Error handling, retries, and approval gates for ANY architectural pattern  
+**Note**: This demonstrates operational concerns applicable to all patterns, not a distinct architecture
 
 **Run and explore**:
 
 ```bash
 python patterns/06_production_ready.py
-# Note retry behaviour
+# Note retry behaviour and error handling
 ```
 
 **Your 4 Exercises** (modify the code):
@@ -192,6 +192,16 @@ python patterns/06_production_ready.py
 2. **Circuit breaker**: After 2 consecutive failures, skip to manual review.
 3. **Rollback state**: Save last approved version, revert if new version fails.
 4. **Compliance check**: Add `compliance_agent` that checks regulatory requirements before approval.
+
+> [!IMPORTANT]
+> The "Production Ready" implementation (Pattern 6) is **not an architectural pattern** but rather a set of **operational concerns** that should can be appended to ANY of the architectural patterns (1-5) or chain of patterns when deploying to production. It demonstrates:
+>
+> - Error handling and recovery
+> - Retry mechanisms
+> - Approval workflows
+> - State persistence
+> - Monitoring and logging
+>   Think of it as "how to make any pattern production-ready" rather than a distinct way of organising agents.
 
 ## Output Structure
 
@@ -211,6 +221,7 @@ generated/
 2. **Experiment**: Complete the 4 exercises for each pattern
 3. **Analyse**: Compare patterns - when would you choose each?
 4. **Build**: Combine patterns for your use case
+5. **Deploy**: Apply production-ready techniques from Pattern 6
 
 ## Workshop Tips
 
@@ -219,26 +230,28 @@ generated/
 - Generated code appears in `generated/` folder with timestamps
 - Each pattern builds on previous concepts
 - Focus on **when** to use each pattern, not just **how**
+- Pattern 6 shows **what** to add for production, applicable to all patterns
 
 ## Pattern Selection Guide
 
-| Your Need                 | Use This Pattern |
-| ------------------------- | ---------------- |
-| Step-by-step process      | Sequential       |
-| Quality-based branching   | Conditional      |
-| Speed through parallelism | Parallel         |
-| Complex coordination      | Supervisor       |
-| Iterative improvement     | Evaluator        |
-| Production deployment     | Production Ready |
+| Your Need                           | Use This Pattern      |
+| ----------------------------------- | --------------------- |
+| Step-by-step process                | Sequential            |
+| Quality-based branching             | Conditional           |
+| Speed through parallelism           | Parallel              |
+| Complex coordination                | Supervisor            |
+| Iterative improvement               | Evaluator             |
+| Production deployment (any pattern) | + Production Concerns |
 
 ## Next Steps
 
 After completing all exercises:
 
 1. Identify your use case's requirements
-2. Select appropriate pattern(s)
+2. Select appropriate architectural pattern(s) (1-5)
 3. Combine patterns if needed
-4. Deploy using LangGraph Platform
+4. Apply production-ready techniques from Pattern 6
+5. Deploy using LangGraph Platform
 
 ## Debugging
 
@@ -249,7 +262,7 @@ After completing all exercises:
 
 ---
 
-**Remember**: Master the patterns, then combine them creatively. The best solution uses the simplest pattern that meets your requirements.
+**Remember**: Master the architectural patterns (1-5), then apply production concerns (6) to make them deployment-ready. The best solution uses the simplest pattern that meets your requirements.
 
 ## Author
 
