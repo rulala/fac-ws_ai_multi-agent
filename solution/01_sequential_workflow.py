@@ -7,6 +7,7 @@ from utils import SequentialCodebase
 import json
 import os
 import datetime
+import time
 
 load_dotenv()
 
@@ -32,7 +33,7 @@ reviewer_prompt = ChatPromptTemplate.from_messages([
 ])
 
 refactorer_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Security Refactoring Expert. Fix security vulnerabilities identified in the review. Prioritise security over performance or readability."),
+    ("system", "You are a Security Refactoring Expert. Fix security vulnerabilities identified in the review. Prioritise security over performance or readability. Write ONLY Python code - no bash commands, no installation instructions, just the Python implementation."),
     ("human",
      "Original code:\n{code}\n\nSecurity review:\n{review}\n\nRefactor to address security issues:")
 ])
@@ -41,6 +42,8 @@ tester_prompt = ChatPromptTemplate.from_messages([
     ("system", "You are a Security Testing Expert. Write security-focused unit tests using pytest. Include tests for input validation, boundary conditions, injection attempts, and error handling."),
     ("human", "Generate security tests for this code:\n{refactored_code}")
 ])
+
+performance_metrics = {}
 
 
 def save_state_to_file(state: CodeReviewState, node_name: str) -> None:
@@ -53,34 +56,68 @@ def save_state_to_file(state: CodeReviewState, node_name: str) -> None:
         json.dump(state, f, indent=2, ensure_ascii=False)
 
 
+def time_node_execution(node_name: str):
+    def decorator(func):
+        def wrapper(state):
+            start_time = time.time()
+            print(f"🔄 Starting {node_name}...")
+
+            result = func(state)
+
+            end_time = time.time()
+            execution_time = end_time - start_time
+            performance_metrics[node_name] = execution_time
+
+            print(f"✅ {node_name} completed in {execution_time:.2f}s")
+            return result
+        return wrapper
+    return decorator
+
+
+@time_node_execution("coder")
 def coder_agent(state: CodeReviewState) -> CodeReviewState:
     response = llm.invoke(coder_prompt.format_messages(input=state["input"]))
     new_state = {"code": response.content}
-    save_state_to_file({**state, **new_state}, "coder")
     return new_state
 
 
+@time_node_execution("reviewer")
 def reviewer_agent(state: CodeReviewState) -> CodeReviewState:
     response = llm.invoke(reviewer_prompt.format_messages(code=state["code"]))
     new_state = {"review": response.content}
-    save_state_to_file({**state, **new_state}, "reviewer")
     return new_state
 
 
+@time_node_execution("refactorer")
 def refactorer_agent(state: CodeReviewState) -> CodeReviewState:
     response = llm.invoke(refactorer_prompt.format_messages(
         code=state["code"], review=state["review"]))
     new_state = {"refactored_code": response.content}
-    save_state_to_file({**state, **new_state}, "refactorer")
     return new_state
 
 
+@time_node_execution("tester")
 def tester_agent(state: CodeReviewState) -> CodeReviewState:
     response = llm.invoke(tester_prompt.format_messages(
         refactored_code=state["refactored_code"]))
     new_state = {"unit_tests": response.content}
     save_state_to_file({**state, **new_state}, "tester")
     return new_state
+
+
+def print_performance_summary():
+    total_time = sum(performance_metrics.values())
+    print("\n" + "="*50)
+    print("📊 PERFORMANCE SUMMARY")
+    print("="*50)
+
+    for node, duration in performance_metrics.items():
+        percentage = (duration / total_time) * 100
+        print(f"{node:12} | {duration:6.2f}s | {percentage:5.1f}%")
+
+    print("-" * 50)
+    print(f"{'TOTAL':12} | {total_time:6.2f}s | 100.0%")
+    print("="*50)
 
 
 builder = StateGraph(CodeReviewState)
