@@ -75,7 +75,7 @@ For each pattern:
    >
    > ```
    > generated/
-   > ? └── 01_sequential_workflow_20250602_143022/
+   > └── 01_sequential_workflow_20250602_143022/
    >     ├── original_code.py
    >     ├── refactored_code.py
    >     └── AUDIT_TRAIL.md
