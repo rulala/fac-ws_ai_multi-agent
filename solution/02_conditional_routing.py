@@ -140,7 +140,7 @@ def finalise_best_code(state: CodeReviewState) -> CodeReviewState:
 
     if best_index != len(state["code"]) - 1:
         print(
-            f"🎯 Selected best code from iteration {best_index} (score: {state['best_lowest_score']}/10) instead of final iteration")
+            f"🎯 Selected best code from iteration {best_index + 1} (score: {state['best_lowest_score']}/10) instead of final iteration")
 
     return {"code": final_code_list}
 
