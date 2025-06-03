@@ -1,6 +1,6 @@
 # Building Multi-Agent Workflows with LangGraph Workshop
 
-Learn to build sophisticated multi-agent systems by mastering five architectural patterns plus production-ready implementation techniques.
+Learn to build sophisticated multi-agent systems by mastering six architectural patterns plus production-ready implementation techniques.
 
 ## Workshop Philosophy
 
@@ -57,8 +57,11 @@ This workshop teaches LangGraph through architectural patterns, not code syntax.
 ## How This Workshop Works
 
 1. **Two versions per pattern**: Start with `patterns_simple/` to understand concepts, then do exercises in `patterns/`
-2. **Five architectural patterns + production implementation**: Each builds on previous concepts
+2. **Six architectural patterns + production implementation**: Each builds on previous concepts
 3. **Four exercises per file**: Modify the code to complete each exercise
+4. **Generated output**: Check `generated/` folder after running the patterns
+5. **Incremental Difficulty**: Each pattern builds on previous concepts
+6. **Focus on concepts, not syntax**: Focus on **when** to use each pattern, not just **how**
 4. **Generated output**: Check `generated/` folder after running the patterns
 5. **Incremental Difficulty**: Each pattern builds on previous concepts
 6. **Focus on concepts, not syntax**: Focus on **when** to use each pattern, not just **how**
@@ -84,12 +87,29 @@ For each pattern:
    > ```
 
 4. **Complete** the 4 exercises by modifying the code in the file you just ran (the one in `patterns/`)
+
+   > #### Output Structure
+   >
+   > Full pattern implementations generate timestamped folders in `generated/`:
+   >
+   > ```
+   > generated/
+   > └── 01_sequential_workflow_20250602_143022/
+   >     ├── original_code.py
+   >     ├── refactored_code.py
+   >     └── AUDIT_TRAIL.md
+   > ```
+
+4. **Complete** the 4 exercises by modifying the code in the file you just ran (the one in `patterns/`)
 5. **Discuss** when you'd use this pattern vs others
 
-## The Five Architectural Patterns
+## The Six Architectural Patterns
 
 ### Pattern 1: Sequential Workflow
 
+- **File**: `patterns/01_sequential_workflow.py`
+- **Concept**: Linear pipeline (coder → reviewer → refactorer)
+- **Use case**: Predictable, step-by-step processes
 - **File**: `patterns/01_sequential_workflow.py`
 - **Concept**: Linear pipeline (coder → reviewer → refactorer)
 - **Use case**: Predictable, step-by-step processes
@@ -101,6 +121,7 @@ python patterns/01_sequential_workflow.py
 # Check generated/ folder for output
 ```
 
+#### **Your 4 Exercises** (modify the code):
 #### **Your 4 Exercises** (modify the code):
 
 1. **Add a tester agent**: Create `tester_agent` function that generates unit tests. Add node after refactorer.
@@ -125,8 +146,13 @@ python patterns/01_sequential_workflow.py
 
 ---
 
+---
+
 ### Pattern 2: Conditional Routing
 
+- **File**: `patterns/02_conditional_routing.py`
+- **Concept**: Quality gates determine workflow paths
+- **Use case**: Iterative improvement based on evaluation
 - **File**: `patterns/02_conditional_routing.py`
 - **Concept**: Quality gates determine workflow paths
 - **Use case**: Iterative improvement based on evaluation
@@ -138,6 +164,7 @@ python patterns/02_conditional_routing.py
 # Note iteration count in output
 ```
 
+#### **Your 4 Exercises** (modify the code):
 #### **Your 4 Exercises** (modify the code):
 
 1. **Adjust threshold**: Change `quality_threshold = 7` to 9. How many iterations now? Play around with `max_iterations` too.
@@ -157,13 +184,19 @@ python patterns/02_conditional_routing.py
 > 📊 Scores - Security: 2, Performance: 8, Readability: 8 (Lowest: 2)
 > Max iterations reached. Best score achieved: 3/10
 > 🎯 Selected best code from iteration 2 (score: 3/10) instead of final iteration
+> 🎯 Selected best code from iteration 2 (score: 3/10) instead of final iteration
 > ✅ Conditional routing codebase created in: generated/02_conditional_routing_20250602_182427/
 > ```
 
 ---
 
+---
+
 ### Pattern 3: Parallel Processing
 
+- **File**: `patterns/03_parallel_processing.py`
+- **Concept**: Concurrent analysis by multiple specialists
+- **Use case**: Independent tasks that can run simultaneously
 - **File**: `patterns/03_parallel_processing.py`
 - **Concept**: Concurrent analysis by multiple specialists
 - **Use case**: Independent tasks that can run simultaneously
@@ -176,6 +209,7 @@ python patterns/03_parallel_processing.py
 ```
 
 #### **Your 4 Exercises** (modify the code):
+#### **Your 4 Exercises** (modify the code):
 
 1. **Add documentation agent**: Create `documentation_agent` that generates docstrings. Run in parallel.
 2. **Add timing**: Import `time`, measure sequential vs parallel execution.
@@ -184,8 +218,13 @@ python patterns/03_parallel_processing.py
 
 ---
 
+---
+
 ### Pattern 4: Supervisor Agents
 
+- **File**: `patterns/04_supervisor_agents.py`
+- **Concept**: Intelligent coordination of specialist agents
+- **Use case**: Complex tasks requiring dynamic expertise
 - **File**: `patterns/04_supervisor_agents.py`
 - **Concept**: Intelligent coordination of specialist agents
 - **Use case**: Complex tasks requiring dynamic expertise
@@ -198,6 +237,7 @@ python patterns/04_supervisor_agents.py
 ```
 
 #### **Your 4 Exercises** (modify the code):
+#### **Your 4 Exercises** (modify the code):
 
 1. **Add database expert**: Create `database_expert_agent` for SQL/schema review. Update supervisor logic.
 2. **Smart routing**: Make supervisor check code content (e.g., "if 'sql' in code: route to database expert").
@@ -206,8 +246,13 @@ python patterns/04_supervisor_agents.py
 
 ---
 
+---
+
 ### Pattern 5: Evaluator-Optimiser
 
+- **File**: `patterns/05_evaluator_optimiser.py`
+- **Concept**: Continuous improvement through feedback loops
+- **Use case**: Iteratively refinable outputs
 - **File**: `patterns/05_evaluator_optimiser.py`
 - **Concept**: Continuous improvement through feedback loops
 - **Use case**: Iteratively refinable outputs
@@ -220,6 +265,7 @@ python patterns/05_evaluator_optimiser.py
 ```
 
 #### **Your 4 Exercises** (modify the code):
+#### **Your 4 Exercises** (modify the code):
 
 1. **Track metrics**: Add complexity score using `radon` library. Optimise for both quality and simplicity.
 2. **Targeted optimisation**: If feedback mentions "performance", use performance-specific optimiser.
@@ -228,47 +274,38 @@ python patterns/05_evaluator_optimiser.py
 
 ---
 
-## Workshop Tips
+### Pattern 6: Orchestrator-Worker
 
-### Pattern Selection Guide
-
-| Your Need                           | Use This Pattern      |
-| ----------------------------------- | --------------------- |
-| Step-by-step process                | Sequential            |
-| Quality-based branching             | Conditional           |
-| Speed through parallelism           | Parallel              |
-| Complex coordination                | Supervisor            |
-| Iterative improvement               | Evaluator             |
-| Production deployment (any pattern) | + Production Concerns |
-
-### Resources
-
-- [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
-- [LangChain Academy](https://github.com/langchain-ai/langchain-academy)
-- [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents/)
-- [Production Examples](https://blog.langchain.dev/top-5-langgraph-agents-in-production-2024/)
-
-### Debugging
-
-- Check `.env` file for API key
-- Ensure conda environment is activated
-- Generated files appear in `generated/` folder
-- Each run creates new timestamped folder
-
----
-
-## STRETCH
-
-### Pattern 6: Production Ready Implementation
-
-**File**: `patterns/06_production_ready.py`  
-**Concept**: Error handling, retries, and approval gates for ANY architectural pattern  
-**Note**: This demonstrates operational concerns applicable to all patterns, not a distinct architecture
+- **File**: `patterns/06_orchestrator_worker.py`
+- **Concept**: Dynamic task breakdown with isolated worker execution
+- **Use case**: Complex tasks requiring unpredictable decomposition
 
 **Run and explore**:
 
 ```bash
-python patterns/06_production_ready.py
+python patterns/06_orchestrator_worker.py
+# Note dynamic worker creation
+```
+
+#### **Your 4 Exercises** (modify the code):
+
+1. **Smart task detection**: Make orchestrator identify task type (frontend, backend, database) and assign appropriate worker types.
+2. **Worker specialisation**: Create different worker agents for different task types with specialised prompts.
+3. **Dependency handling**: Allow orchestrator to create subtasks with dependencies (e.g., "database schema must complete before API").
+4. **Result validation**: Add validator that checks if worker outputs can be combined successfully before synthesis.
+
+---
+
+## STRETCH: Production Ready Implementation
+
+- **File**: `patterns/07_production_ready.py`
+- **Concept**: Error handling, retries, and approval gates for ANY architectural pattern
+- **Note**: This demonstrates operational concerns applicable to all patterns, not a distinct architecture
+
+**Run and explore**:
+
+```bash
+python patterns/07_production_ready.py
 # Note retry behaviour and error handling
 ```
 
@@ -291,15 +328,63 @@ python patterns/06_production_ready.py
 > [!TIP]
 > Think of it as "how to make any pattern production-ready" rather than a distinct way of organising agents.
 
+## Output Structure
+
+Full pattern implementations generate timestamped folders in `generated/`:
+
+```
+generated/
+└── 01_sequential_workflow_20250602_143022/
+    ├── original_code.py
+    ├── refactored_code.py
+    └── AUDIT_TRAIL.md
+```
+
+## Key Learning Progression
+
+1. **Understand**: Run simple version, trace execution flow
+2. **Experiment**: Complete the 4 exercises for each pattern
+3. **Analyse**: Compare patterns - when would you choose each?
+4. **Build**: Combine patterns for your use case
+5. **Deploy**: Apply production-ready techniques from Pattern 6
+
+## Workshop Tips
+
+- Start with `patterns_simple/` to understand core concepts
+- Use `patterns/` for exercises - they have proper output handling
+- Generated code appears in `generated/` folder with timestamps
+- Each pattern builds on previous concepts
+- Focus on **when** to use each pattern, not just **how**
+- Pattern 6 shows **what** to add for production, applicable to all patterns
+
+## Pattern Selection Guide
+
+| Your Need                           | Use This Pattern      |
+| ----------------------------------- | --------------------- |
+| Step-by-step process                | Sequential            |
+| Quality-based branching             | Conditional           |
+| Speed through parallelism           | Parallel              |
+| Complex coordination                | Supervisor            |
+| Iterative improvement               | Evaluator             |
+| Dynamic task decomposition          | Orchestrator          |
+| Production deployment (any pattern) | + Production Concerns |
+
+## Resources
+
+- [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
+- [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents/)
+- [LangGraph Workflows](https://langchain-ai.github.io/langgraph/tutorials/workflows/)
+- [LangGraph Agent Superviser](https://langchain-ai.github.io/langgraph/tutorials/multi_agent/agent_supervisor/)
+
 ## Next Steps
 
 After completing all exercises:
 
 1. Identify your use case's requirements
-2. Select appropriate architectural pattern(s) (1-5)
-3. Combine patterns if needed
+2. Select appropriate architectural pattern(s) (1-6)
+3. Combine patterns if needed, add tools
 4. Experiment using different models for different agents (perhaps a reasoning model for reviews etc)
-5. Apply production-ready techniques from Pattern 6
+5. Apply production-ready techniques from Pattern 7
 6. Deploy using [LangGraph Platform](https://langchain-ai.github.io/langgraph/concepts/langgraph_platform/)
 
 ---

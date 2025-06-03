@@ -24,7 +24,7 @@ def coder(state: State) -> State:
 def supervisor(state: State) -> State:
     completed = len(state.get("expert_reports", []))
     experts = ["security", "quality"]
-    
+
     if completed < len(experts):
         return {"next_expert": experts[completed]}
     return {"next_expert": "done"}
@@ -63,7 +63,7 @@ builder.add_edge(START, "coder")
 builder.add_edge("coder", "supervisor")
 builder.add_conditional_edges("supervisor", route_expert, {
     "security_expert": "security_expert",
-    "quality_expert": "quality_expert", 
+    "quality_expert": "quality_expert",
     "done": END
 })
 builder.add_edge("security_expert", "supervisor")

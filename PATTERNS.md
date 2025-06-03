@@ -9,7 +9,8 @@ graph LR
     B -.->|Speed| C[Parallel]
     C -.->|Expertise| D[Supervisor]
     D -.->|Quality| E[Evaluator]
-    E -.->|Deploy| F[Production]
+    E -.->|Flexibility| F[Orchestrator]
+    F -.->|Deploy| G[Production]
 ```
 
 ### Pattern Decision Logic
@@ -22,12 +23,14 @@ graph LR
     Need -->|Speed| ScalePerformance[Scale Performance<br/>Parallel Processing]
     Need -->|Domain Knowledge| GainExpertise[Gain Expertise<br/>Supervisor Agents]
     Need -->|Perfect Output| EnsureQuality[Ensure Quality<br/>Evaluator-Optimiser]
+    Need -->|Dynamic Tasks| AddFlexibility[Add Flexibility<br/>Orchestrator-Worker]
     Need -->|Real Deployment| DeploySafely[Deploy Safely<br/>Production Ready]
 
     AddIntelligence --> Need
     ScalePerformance --> Need
     GainExpertise --> Need
     EnsureQuality --> Need
+    AddFlexibility --> Need
     DeploySafely --> Production[Production System]
 ```
 
@@ -135,10 +138,10 @@ builder.add_edge("coder", "style_agent")
 **Pros**: Faster execution, independent failures <br />
 **Cons**: Harder to debug, needs result aggregation <br />
 
-## Pattern 4: Supervisor Agents
+## Pattern 4: Supervisor-Agents
 
 - **When to use**: Dynamic expert selection based on content
-- **Workflow**: [Orchestrator-Workers](https://www.anthropic.com/engineering/building-effective-agents#workflow-orchestrator-workers)
+- **Workflow**: [OAgent Supervisor](https://langchain-ai.github.io/langgraph/tutorials/multi_agent/agent_supervisor/)
 - **File**: `04_supervisor_agents.py`
 - **Description**: Intelligent coordination of specialist agents
 - **Best for**: Complex tasks requiring expertise
@@ -211,10 +214,48 @@ def should_continue(state):
 **Pros**: Continuous improvement, clear termination <br />
 **Cons**: Slow, may hit iteration limit before quality <br />
 
+## Pattern 6: Orchestrator-Worker
+
+- **When to use**: Tasks requiring dynamic decomposition into subtasks
+- **Workflow**: [Orchestrator-Workers](https://www.anthropic.com/engineering/building-effective-agents#workflow-orchestrator-workers)
+- **File**: `06_orchestrator_worker.py`
+- **Description**: Dynamic task breakdown with isolated worker execution
+- **Best for**: Complex, unpredictable task structures
+- **Complexity**: Very High
+- **Execution**: Dynamic (scales with task complexity)
+- **Use cases**: Complex software projects, Research tasks, Multi-step workflows
+
+```mermaid
+graph TD
+    START --> Orchestrator
+    Orchestrator --> TaskBreakdown{Create Subtasks}
+    TaskBreakdown -->|Send| Worker1[Worker]
+    TaskBreakdown -->|Send| Worker2[Worker]
+    TaskBreakdown -->|Send| Worker3[Worker]
+    Worker1 --> Collect[Collect Results]
+    Worker2 --> Collect
+    Worker3 --> Collect
+    Collect --> Synthesis
+    Synthesis --> END
+```
+
+```python
+# Key structure
+def create_workers(state):
+    return [Send("worker", {"task": task}) for task in state["subtasks"]]
+
+builder.add_conditional_edges("orchestrator", create_workers, ["worker"])
+```
+
+**Real example**: "Build a web app" → [Create DB schema, Build API, Design frontend, Write tests] <br /> <br />
+
+**Pros**: Maximum flexibility, dynamic scaling, isolated execution <br />
+**Cons**: Most complex, harder to predict execution flow <br />
+
 ## Production Ready Implementation
 
 - **When to use**: Real deployment with error handling needed, appended to your multi-agent system
-- **File**: `06_production_ready.py`
+- **File**: `07_production_ready.py`
 - **Description**: Enterprise features: error handling, persistence, monitoring
 - **Best for**: Real-world deployment
 - **Complexity**: Very High
@@ -260,7 +301,7 @@ def check_approval(state):
 - Circuit breakers
 - Rollback capabilities
 
-**Important**: This is NOT a distinct architectural pattern but a set of concerns you apply to patterns 1-5 for production deployment
+**Important**: This is NOT a distinct architectural pattern but a set of concerns you apply to patterns 1-6 for production deployment
 
 ## Pattern Complexity & Performance
 
@@ -272,6 +313,7 @@ graph TD
         Parallel[Parallel<br/>★★★☆☆]
         Supervisor[Supervisor<br/>★★★★☆]
         Evaluator[Evaluator<br/>★★★★☆]
+        Orchestrator[Orchestrator<br/>★★★★★]
     end
 
     subgraph "Operational Complexity"
@@ -286,6 +328,7 @@ graph TD
 | Parallel           | 0.3x    | Medium      | Speed critical             |
 | Supervisor         | 1.2x    | High        | Complex coordination       |
 | Evaluator          | 3-10x   | High        | Quality critical           |
+| Orchestrator       | 2-20x   | Medium      | Dynamic task decomposition |
 | + Production Ready | +50%    | Very High   | Deploying ANY pattern live |
 
 ## Combining Patterns
@@ -295,11 +338,13 @@ graph TD
     subgraph "Pattern Combinations"
         A[Conditional + Parallel]
         B[Supervisor + Evaluator]
-        C[Any Pattern + Production]
+        C[Orchestrator + Supervisor]
+        D[Any Pattern + Production]
 
-        A --> D[Quality gate triggers<br/>parallel analysis]
-        B --> E[Supervisor picks experts,<br/>evaluator ensures quality]
-        C --> F[Base pattern with<br/>error handling & monitoring]
+        A --> E[Quality gate triggers<br/>parallel analysis]
+        B --> F[Supervisor picks experts,<br/>evaluator ensures quality]
+        C --> G[Orchestrator creates tasks,<br/>supervisor routes to experts]
+        D --> H[Base pattern with<br/>error handling & monitoring]
     end
 ```
 
@@ -307,7 +352,8 @@ Patterns can be mixed:
 
 1. **Conditional + Parallel**: Quality gate triggers parallel analysis
 2. **Supervisor + Evaluator**: Supervisor picks experts, evaluator ensures quality
-3. **Any Pattern + Production**: Add operational concerns to any architecture
+3. **Orchestrator + Supervisor**: Orchestrator breaks down tasks, supervisor routes to domain experts
+4. **Any Pattern + Production**: Add operational concerns to any architecture
 
 ## Implementation Guide
 
@@ -319,12 +365,14 @@ Patterns can be mixed:
 | Code security analysis            | Parallel Processing | Medium     | Fast           | Multiple independent analyses can run concurrently     |
 | Complex enterprise system review  | Supervisor Agents   | High       | Efficient      | Requires domain expertise and intelligent coordination |
 | Creative content generation       | Evaluator-Optimiser | High       | Slow           | Benefits from iterative feedback and improvement       |
+| Building complex software project | Orchestrator-Worker | Very High  | Variable       | Requires dynamic task decomposition and coordination   |
 | Mission-critical financial system | Production Ready    | Very High  | Robust         | Requires robust error handling and monitoring          |
 | Learning/prototyping              | Sequential          | Low        | Fast           | Simple to understand and implement                     |
 | Quality assurance pipeline        | Conditional Routing | Medium     | Variable       | Quality gates determine workflow paths                 |
 | Document processing at scale      | Parallel Processing | Medium     | Fast           | Independent tasks benefit from concurrency             |
 | Multi-domain analysis             | Supervisor Agents   | High       | Efficient      | Dynamic expert selection based on content              |
 | AI content refinement             | Evaluator-Optimiser | High       | Slow           | Continuous improvement through feedback                |
+| Research with unknown scope       | Orchestrator-Worker | Very High  | Variable       | Cannot predict subtasks upfront                        |
 
 ### Simple vs Full Patterns
 
@@ -359,6 +407,13 @@ class State(TypedDict):
     iteration_count: int
     quality_score: int
 
+# Orchestrator (adds dynamic workers)
+class OrchestratorState(TypedDict):
+    input: str
+    subtasks: List[dict]
+    worker_outputs: List[str]
+    final_result: str
+
 # Production (adds to any pattern)
 class ProductionState(TypedDict):
     # ... existing state fields ...
@@ -374,6 +429,7 @@ class ProductionState(TypedDict):
 ❌ **Parallel without aggregation** - Results get lost <br />
 ❌ **Conditional without max iterations** - Infinite loops <br />
 ❌ **Evaluator for time-critical tasks** - Too slow <br />
+❌ **Orchestrator for predictable tasks** - Unnecessary complexity <br />
 ❌ **Deploying without production concerns** - No error recovery <br />
 
 ### Decision Framework
@@ -384,6 +440,17 @@ Ask yourself:
 2. **Need quality assurance?** → Conditional or Evaluator
 3. **Can tasks run together?** → Parallel
 4. **Need smart coordination?** → Supervisor
-5. **Deploying to production?** → Add Production concerns to chosen pattern
+5. **Unknown task structure?** → Orchestrator
+6. **Deploying to production?** → Add Production concerns to chosen pattern
 
 Start simple, add complexity only when needed. Add production concerns before deploying.
+
+### Key Architectural Differences
+
+| Pattern          | Coordination    | Agent Creation | State Sharing | When to Use                |
+| ---------------- | --------------- | -------------- | ------------- | -------------------------- |
+| **Parallel**     | None            | Static         | Shared        | Speed through independence |
+| **Supervisor**   | Central routing | Static         | Shared        | Expert selection           |
+| **Orchestrator** | Task breakdown  | Dynamic        | Isolated      | Unknown task structure     |
+
+Understanding these differences helps you choose the right pattern for your specific use case.

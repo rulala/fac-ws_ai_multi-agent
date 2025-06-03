@@ -209,6 +209,13 @@ class ParallelCodebase(CodebaseGenerator):
 """
         self.write_text_file("SYNTHESIS_REPORT.md", synthesis_content)
 
+        documentation_section = ""
+        if result.get('documentation_analysis'):
+            documentation_section = f"""
+
+### Documentation Analysis
+{result.get('documentation_analysis', 'No documentation analysis available')}"""
+
         audit_content = f"""# Parallel Processing Audit Trail
 
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
@@ -229,7 +236,7 @@ class ParallelCodebase(CodebaseGenerator):
 {result.get('performance_analysis', 'No performance analysis available')}
 
 ### Style Analysis
-{result.get('style_analysis', 'No style analysis available')}
+{result.get('style_analysis', 'No style analysis available')}{documentation_section}
 
 ## Files Generated
 - `main_code.py` - Analysed implementation
@@ -353,6 +360,89 @@ class EvaluatorCodebase(CodebaseGenerator):
         self.write_text_file("AUDIT_TRAIL.md", audit_content)
         print(
             f"✅ Evaluator-optimiser codebase created in: {self.folder_name}/")
+
+
+class OrchestratorCodebase(CodebaseGenerator):
+    def generate(self, result: Dict[str, Any]) -> None:
+        self.create_folder()
+
+        self.write_python_file("final_code", result.get('final_result', ''))
+
+        subtasks_section = ""
+        if result.get('subtasks'):
+            subtasks_section = "\n## Task Breakdown\n\n"
+            for i, subtask in enumerate(result['subtasks'], 1):
+                if isinstance(subtask, dict):
+                    subtasks_section += f"""### Subtask {i}: {subtask.get('name', f'Task {i}')}
+**Type:** {subtask.get('type', 'Unknown')}  
+**Description:** {subtask.get('description', 'No description')}
+
+"""
+                else:
+                    subtasks_section += f"""### Subtask {i}
+{subtask}
+
+"""
+
+        worker_outputs_section = ""
+        if result.get('worker_outputs'):
+            worker_outputs_section = "\n## Worker Outputs\n\n"
+            for i, output in enumerate(result['worker_outputs'], 1):
+                worker_outputs_section += f"""### Worker {i} Output
+```python
+{extract_code_from_response(output)}
+```
+
+"""
+
+        orchestrator_report = f"""# Orchestrator Process Report
+
+**Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
+**Task:** {self.task}  
+**Analysis Method:** Dynamic Task Decomposition
+
+## Executive Summary
+
+The orchestrator successfully broke down the complex task into {len(result.get('subtasks', []))} manageable subtasks, executed them in parallel through specialized workers, and synthesized the results into a cohesive solution.
+
+## Process Overview
+
+1. **Task Analysis**: Orchestrator analyzed the input requirements
+2. **Dynamic Decomposition**: Created {len(result.get('subtasks', []))} specialized subtasks
+3. **Parallel Execution**: Workers processed subtasks independently
+4. **Result Synthesis**: Combined worker outputs into final solution
+
+{subtasks_section}
+
+---
+*Generated using LangGraph Orchestrator-Worker Pattern*
+"""
+        self.write_text_file("ORCHESTRATOR_REPORT.md", orchestrator_report)
+
+        audit_content = f"""# Orchestrator-Worker Audit Trail
+
+**Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
+**Task:** {self.task}  
+**Pattern:** Orchestrator-Worker
+**Subtasks Created:** {len(result.get('subtasks', []))}
+**Workers Executed:** {len(result.get('worker_outputs', []))}
+
+## Final Code
+```python
+{extract_code_from_response(result.get('final_result', 'No code generated'))}
+```
+
+{subtasks_section}{worker_outputs_section}## Files Generated
+- `final_code.py` - Synthesized final implementation
+- `ORCHESTRATOR_REPORT.md` - **KEY DELIVERABLE:** Orchestration process breakdown
+
+---
+*Generated using LangGraph Orchestrator-Worker Pattern*
+"""
+        self.write_text_file("AUDIT_TRAIL.md", audit_content)
+        print(
+            f"✅ Orchestrator-worker codebase created in: {self.folder_name}/")
+        print(f"🎯 Key deliverable: {self.folder_name}/ORCHESTRATOR_REPORT.md")
 
 
 class ProductionCodebase(CodebaseGenerator):
