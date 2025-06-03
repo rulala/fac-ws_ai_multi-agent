@@ -44,14 +44,14 @@ style_prompt = ChatPromptTemplate.from_messages([
 ])
 
 documentation_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Documentation Expert. Generate comprehensive list of recommendations including docstrings for functions and classes following PEP 257 conventions."),
+    ("system", "You are a Documentation Expert. Generate comprehensive docstrings for functions and classes following PEP 257 conventions."),
     ("human", "Generate proper docstrings for this code:\n{code}")
 ])
 
 synthesis_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Technical Lead. Synthesise analysis reports into actionable recommendations with priorities."),
+    ("system", "You are a Technical Lead. Synthesise analysis reports into actionable recommendations with priorities. IMPORTANT: Security issues should be given 2x weight - treat security recommendations as highest priority."),
     ("human",
-     "Security Analysis:\n{security}\n\nPerformance Analysis:\n{performance}\n\nStyle Analysis:\n{style}\n\nDocumentation Analysis:\n{documentation}\n\nProvide prioritised recommendations:")
+     "SECURITY ANALYSIS (HIGH PRIORITY - 2x weight):\n{security}\n\nPerformance Analysis:\n{performance}\n\nStyle Analysis:\n{style}\n\nDocumentation Analysis:\n{documentation}\n\nProvide prioritised recommendations with security concerns at the top:")
 ])
 
 
@@ -68,6 +68,7 @@ def measure_sequential_execution(code: str) -> float:
 
 def coder_agent(state: CodeAnalysisState) -> CodeAnalysisState:
     response = llm.invoke(coder_prompt.format_messages(input=state["input"]))
+
     print("⏱️  Measuring sequential execution...")
     sequential_time = measure_sequential_execution(response.content)
     print(f"Sequential execution time: {sequential_time:.2f}s")
@@ -76,25 +77,42 @@ def coder_agent(state: CodeAnalysisState) -> CodeAnalysisState:
 
 
 def security_agent(state: CodeAnalysisState) -> CodeAnalysisState:
-    response = llm.invoke(security_prompt.format_messages(code=state["code"]))
-    return {"security_analysis": response.content}
+    try:
+        response = llm.invoke(
+            security_prompt.format_messages(code=state["code"]))
+        return {"security_analysis": response.content}
+    except Exception as e:
+        print(f"⚠️  Security agent failed: {str(e)}")
+        return {"security_analysis": "Security analysis failed - agent encountered an error"}
 
 
 def performance_agent(state: CodeAnalysisState) -> CodeAnalysisState:
-    response = llm.invoke(
-        performance_prompt.format_messages(code=state["code"]))
-    return {"performance_analysis": response.content}
+    try:
+        response = llm.invoke(
+            performance_prompt.format_messages(code=state["code"]))
+        return {"performance_analysis": response.content}
+    except Exception as e:
+        print(f"⚠️  Performance agent failed: {str(e)}")
+        return {"performance_analysis": "Performance analysis failed - agent encountered an error"}
 
 
 def style_agent(state: CodeAnalysisState) -> CodeAnalysisState:
-    response = llm.invoke(style_prompt.format_messages(code=state["code"]))
-    return {"style_analysis": response.content}
+    try:
+        response = llm.invoke(style_prompt.format_messages(code=state["code"]))
+        return {"style_analysis": response.content}
+    except Exception as e:
+        print(f"⚠️  Style agent failed: {str(e)}")
+        return {"style_analysis": "Style analysis failed - agent encountered an error"}
 
 
 def documentation_agent(state: CodeAnalysisState) -> CodeAnalysisState:
-    response = llm.invoke(
-        documentation_prompt.format_messages(code=state["code"]))
-    return {"documentation_analysis": response.content}
+    try:
+        response = llm.invoke(
+            documentation_prompt.format_messages(code=state["code"]))
+        return {"documentation_analysis": response.content}
+    except Exception as e:
+        print(f"⚠️  Documentation agent failed: {str(e)}")
+        return {"documentation_analysis": "Documentation analysis failed - agent encountered an error"}
 
 
 def synthesis_agent(state: CodeAnalysisState) -> CodeAnalysisState:
@@ -115,7 +133,7 @@ def synthesis_agent(state: CodeAnalysisState) -> CodeAnalysisState:
     sequential_time = state.get("sequential_time", 0)
     speedup = sequential_time / total_parallel_time if total_parallel_time > 0 else 0
 
-    print("⏱️  Parallel execution completed")
+    print(f"⏱️  Parallel execution completed")
     print(f"Sequential time: {sequential_time:.2f}s")
     print(f"Parallel time: {total_parallel_time:.2f}s")
     print(f"Speedup: {speedup:.2f}x")
