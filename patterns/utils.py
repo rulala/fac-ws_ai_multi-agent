@@ -209,6 +209,13 @@ class ParallelCodebase(CodebaseGenerator):
 """
         self.write_text_file("SYNTHESIS_REPORT.md", synthesis_content)
 
+        documentation_section = ""
+        if result.get('documentation_analysis'):
+            documentation_section = f"""
+
+### Documentation Analysis
+{result.get('documentation_analysis', 'No documentation analysis available')}"""
+
         audit_content = f"""# Parallel Processing Audit Trail
 
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
@@ -229,7 +236,7 @@ class ParallelCodebase(CodebaseGenerator):
 {result.get('performance_analysis', 'No performance analysis available')}
 
 ### Style Analysis
-{result.get('style_analysis', 'No style analysis available')}
+{result.get('style_analysis', 'No style analysis available')}{documentation_section}
 
 ## Files Generated
 - `main_code.py` - Analysed implementation
