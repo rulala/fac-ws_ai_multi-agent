@@ -75,9 +75,9 @@ For each pattern:
 
 ### Pattern 1: Sequential Workflow
 
-**File**: `patterns/01_sequential_workflow.py`  
-**Concept**: Linear pipeline (coder → reviewer → refactorer)  
-**Use case**: Predictable, step-by-step processes
+- **File**: `patterns/01_sequential_workflow.py`  
+- **Concept**: Linear pipeline (coder → reviewer → refactorer)  
+- **Use case**: Predictable, step-by-step processes
 
 **Run and explore**:
 
@@ -110,9 +110,9 @@ python patterns/01_sequential_workflow.py
 
 ### Pattern 2: Conditional Routing
 
-**File**: `patterns/02_conditional_routing.py`
-**Concept**: Quality gates determine workflow paths
-**Use case**: Iterative improvement based on evaluation
+- **File**: `patterns/02_conditional_routing.py`
+- **Concept**: Quality gates determine workflow paths
+- **Use case**: Iterative improvement based on evaluation
 
 **Run and explore**:
 
@@ -145,9 +145,9 @@ python patterns/02_conditional_routing.py
 
 ### Pattern 3: Parallel Processing
 
-**File**: `patterns/03_parallel_processing.py`
-**Concept**: Concurrent analysis by multiple specialists
-**Use case**: Independent tasks that can run simultaneously
+- **File**: `patterns/03_parallel_processing.py`
+- **Concept**: Concurrent analysis by multiple specialists
+- **Use case**: Independent tasks that can run simultaneously
 
 **Run and explore**:
 
@@ -165,9 +165,9 @@ python patterns/03_parallel_processing.py
 
 ### Pattern 4: Supervisor Agents
 
-**File**: `patterns/04_supervisor_agents.py`  
-**Concept**: Intelligent coordination of specialist agents  
-**Use case**: Complex tasks requiring dynamic expertise
+- **File**: `patterns/04_supervisor_agents.py`  
+- **Concept**: Intelligent coordination of specialist agents  
+- **Use case**: Complex tasks requiring dynamic expertise
 
 **Run and explore**:
 
@@ -185,9 +185,9 @@ python patterns/04_supervisor_agents.py
 
 ### Pattern 5: Evaluator-Optimiser
 
-**File**: `patterns/05_evaluator_optimiser.py`  
-**Concept**: Continuous improvement through feedback loops  
-**Use case**: Iteratively refinable outputs
+- **File**: `patterns/05_evaluator_optimiser.py`  
+- **Concept**: Continuous improvement through feedback loops  
+- **Use case**: Iteratively refinable outputs
 
 **Run and explore**:
 
