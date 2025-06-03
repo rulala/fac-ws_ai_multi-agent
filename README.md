@@ -68,6 +68,19 @@ For each pattern:
 1. **Read** the simple version in `patterns_simple/`
 2. **Run** the full version in `patterns/`
 3. **Examine** the generated output in `generated/`
+
+   > #### Output Structure
+   >
+   > Full pattern implementations generate timestamped folders in `generated/`:
+   >
+   > ```
+   > generated/
+   > ? └── 01_sequential_workflow_20250602_143022/
+   >     ├── original_code.py
+   >     ├── refactored_code.py
+   >     └── AUDIT_TRAIL.md
+   > ```
+
 4. **Complete** the 4 exercises by modifying the code
 5. **Discuss** when you'd use this pattern vs others
 
@@ -84,18 +97,6 @@ For each pattern:
 ```bash
 python patterns/01_sequential_workflow.py
 # Check generated/ folder for output
-```
-
-#### Output Structure
-
-Full pattern implementations generate timestamped folders in `generated/`:
-
-```
-generated/
-└── 01_sequential_workflow_20250602_143022/
-    ├── original_code.py
-    ├── refactored_code.py
-    └── AUDIT_TRAIL.md
 ```
 
 #### **Your 4 Exercises** (modify the code):
