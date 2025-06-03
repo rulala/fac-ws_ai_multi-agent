@@ -62,6 +62,9 @@ This workshop teaches LangGraph through architectural patterns, not code syntax.
 4. **Generated output**: Check `generated/` folder after running the patterns
 5. **Incremental Difficulty**: Each pattern builds on previous concepts
 6. **Focus on concepts, not syntax**: Focus on **when** to use each pattern, not just **how**
+4. **Generated output**: Check `generated/` folder after running the patterns
+5. **Incremental Difficulty**: Each pattern builds on previous concepts
+6. **Focus on concepts, not syntax**: Focus on **when** to use each pattern, not just **how**
 
 ## Approach Each Pattern
 
@@ -70,6 +73,20 @@ For each pattern:
 1. **Read** the simple version in `patterns_simple/`
 2. **Run** the full version in `patterns/`
 3. **Examine** the generated output in `generated/`
+
+   > #### Output Structure
+   >
+   > Full pattern implementations generate timestamped folders in `generated/`:
+   >
+   > ```
+   > generated/
+   > └── 01_sequential_workflow_20250602_143022/
+   >     ├── original_code.py
+   >     ├── refactored_code.py
+   >     └── AUDIT_TRAIL.md
+   > ```
+
+4. **Complete** the 4 exercises by modifying the code in the file you just ran (the one in `patterns/`)
 
    > #### Output Structure
    >
@@ -93,6 +110,9 @@ For each pattern:
 - **File**: `patterns/01_sequential_workflow.py`
 - **Concept**: Linear pipeline (coder → reviewer → refactorer)
 - **Use case**: Predictable, step-by-step processes
+- **File**: `patterns/01_sequential_workflow.py`
+- **Concept**: Linear pipeline (coder → reviewer → refactorer)
+- **Use case**: Predictable, step-by-step processes
 
 **Run and explore**:
 
@@ -101,6 +121,7 @@ python patterns/01_sequential_workflow.py
 # Check generated/ folder for output
 ```
 
+#### **Your 4 Exercises** (modify the code):
 #### **Your 4 Exercises** (modify the code):
 
 1. **Add a tester agent**: Create `tester_agent` function that generates unit tests. Add node after refactorer.
@@ -125,8 +146,13 @@ python patterns/01_sequential_workflow.py
 
 ---
 
+---
+
 ### Pattern 2: Conditional Routing
 
+- **File**: `patterns/02_conditional_routing.py`
+- **Concept**: Quality gates determine workflow paths
+- **Use case**: Iterative improvement based on evaluation
 - **File**: `patterns/02_conditional_routing.py`
 - **Concept**: Quality gates determine workflow paths
 - **Use case**: Iterative improvement based on evaluation
@@ -138,6 +164,7 @@ python patterns/02_conditional_routing.py
 # Note iteration count in output
 ```
 
+#### **Your 4 Exercises** (modify the code):
 #### **Your 4 Exercises** (modify the code):
 
 1. **Adjust threshold**: Change `quality_threshold = 7` to 9. How many iterations now? Play around with `max_iterations` too.
@@ -157,13 +184,19 @@ python patterns/02_conditional_routing.py
 > 📊 Scores - Security: 2, Performance: 8, Readability: 8 (Lowest: 2)
 > Max iterations reached. Best score achieved: 3/10
 > 🎯 Selected best code from iteration 2 (score: 3/10) instead of final iteration
+> 🎯 Selected best code from iteration 2 (score: 3/10) instead of final iteration
 > ✅ Conditional routing codebase created in: generated/02_conditional_routing_20250602_182427/
 > ```
 
 ---
 
+---
+
 ### Pattern 3: Parallel Processing
 
+- **File**: `patterns/03_parallel_processing.py`
+- **Concept**: Concurrent analysis by multiple specialists
+- **Use case**: Independent tasks that can run simultaneously
 - **File**: `patterns/03_parallel_processing.py`
 - **Concept**: Concurrent analysis by multiple specialists
 - **Use case**: Independent tasks that can run simultaneously
@@ -176,6 +209,7 @@ python patterns/03_parallel_processing.py
 ```
 
 #### **Your 4 Exercises** (modify the code):
+#### **Your 4 Exercises** (modify the code):
 
 1. **Add documentation agent**: Create `documentation_agent` that generates docstrings. Run in parallel.
 2. **Add timing**: Import `time`, measure sequential vs parallel execution.
@@ -184,8 +218,13 @@ python patterns/03_parallel_processing.py
 
 ---
 
+---
+
 ### Pattern 4: Supervisor Agents
 
+- **File**: `patterns/04_supervisor_agents.py`
+- **Concept**: Intelligent coordination of specialist agents
+- **Use case**: Complex tasks requiring dynamic expertise
 - **File**: `patterns/04_supervisor_agents.py`
 - **Concept**: Intelligent coordination of specialist agents
 - **Use case**: Complex tasks requiring dynamic expertise
@@ -198,6 +237,7 @@ python patterns/04_supervisor_agents.py
 ```
 
 #### **Your 4 Exercises** (modify the code):
+#### **Your 4 Exercises** (modify the code):
 
 1. **Add database expert**: Create `database_expert_agent` for SQL/schema review. Update supervisor logic.
 2. **Smart routing**: Make supervisor check code content (e.g., "if 'sql' in code: route to database expert").
@@ -206,8 +246,13 @@ python patterns/04_supervisor_agents.py
 
 ---
 
+---
+
 ### Pattern 5: Evaluator-Optimiser
 
+- **File**: `patterns/05_evaluator_optimiser.py`
+- **Concept**: Continuous improvement through feedback loops
+- **Use case**: Iteratively refinable outputs
 - **File**: `patterns/05_evaluator_optimiser.py`
 - **Concept**: Continuous improvement through feedback loops
 - **Use case**: Iteratively refinable outputs
@@ -219,6 +264,7 @@ python patterns/05_evaluator_optimiser.py
 # Watch score progression
 ```
 
+#### **Your 4 Exercises** (modify the code):
 #### **Your 4 Exercises** (modify the code):
 
 1. **Track metrics**: Add complexity score using `radon` library. Optimise for both quality and simplicity.
@@ -340,13 +386,6 @@ After completing all exercises:
 4. Experiment using different models for different agents (perhaps a reasoning model for reviews etc)
 5. Apply production-ready techniques from Pattern 7
 6. Deploy using [LangGraph Platform](https://langchain-ai.github.io/langgraph/concepts/langgraph_platform/)
-
-## Debugging
-
-- Check `.env` file for API key
-- Ensure conda environment is activated
-- Generated files appear in `generated/` folder
-- Each run creates new timestamped folder
 
 ---
 
