@@ -120,6 +120,8 @@ generated/
 > ✅ Sequential codebase created in: generated/01_sequential_workflow_20250602_162810/
 > ```
 
+---
+
 ### Pattern 2: Conditional Routing
 
 - **File**: `patterns/02_conditional_routing.py`
@@ -155,6 +157,8 @@ python patterns/02_conditional_routing.py
 > ✅ Conditional routing codebase created in: generated/02_conditional_routing_20250602_182427/
 > ```
 
+---
+
 ### Pattern 3: Parallel Processing
 
 - **File**: `patterns/03_parallel_processing.py`
@@ -174,6 +178,8 @@ python patterns/03_parallel_processing.py
 2. **Add timing**: Import `time`, measure sequential vs parallel execution.
 3. **Handle failures**: Wrap agents in try/except, continue if one fails.
 4. **Weighted synthesis**: Give security 2x weight in final recommendations.
+
+---
 
 ### Pattern 4: Supervisor Agents
 
@@ -195,6 +201,8 @@ python patterns/04_supervisor_agents.py
 3. **Expert collaboration**: Let security expert see quality report before finalising.
 4. **Add priorities**: Supervisor should consult security expert first for authentication tasks.
 
+---
+
 ### Pattern 5: Evaluator-Optimiser
 
 - **File**: `patterns/05_evaluator_optimiser.py`
@@ -215,13 +223,7 @@ python patterns/05_evaluator_optimiser.py
 3. **Detect plateau**: If score doesn't improve for 2 iterations, stop early.
 4. **History tracking**: Store all iterations in state, generate comparison chart.
 
-## Key Learning Progression
-
-1. **Understand**: Run simple version, trace execution flow
-2. **Experiment**: Complete the 4 exercises for each pattern
-3. **Analyse**: Compare patterns - when would you choose each?
-4. **Build**: Combine patterns for your use case
-5. **Deploy**: Apply production-ready techniques from Pattern 6
+---
 
 ## Workshop Tips
 
