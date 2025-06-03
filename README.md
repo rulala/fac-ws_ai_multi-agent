@@ -59,7 +59,9 @@ This workshop teaches LangGraph through architectural patterns, not code syntax.
 1. **Two versions per pattern**: Start with `patterns_simple/` to understand concepts, then do exercises in `patterns/`
 2. **Five architectural patterns + production implementation**: Each builds on previous concepts
 3. **Four exercises per file**: Modify the code to complete each exercise
-4. **Generated output**: Check `generated/` folder after each run
+4. **Generated output**: Check `generated/` folder after running the patterns
+5. **Incremental Difficulty**: Each pattern builds on previous concepts
+6. **Focus on concepts, not syntax**: Focus on **when** to use each pattern, not just **how**
 
 ## Approach Each Pattern
 
@@ -227,13 +229,6 @@ python patterns/05_evaluator_optimiser.py
 ---
 
 ## Workshop Tips
-
-- Start with `patterns_simple/` to understand core concepts
-- Use `patterns/` for exercises - they have proper output handling
-- Generated code appears in `generated/` folder with timestamps
-- Each pattern builds on previous concepts
-- Focus on **when** to use each pattern, not just **how**
-- Pattern 6 (stretch goal, below) shows **what** to add for production, applicable to all patterns
 
 ### Pattern Selection Guide
 
