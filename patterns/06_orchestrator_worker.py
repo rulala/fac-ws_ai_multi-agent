@@ -111,7 +111,7 @@ workflow = builder.compile()
 if __name__ == "__main__":
     task = "Create a user authentication system with login, registration, and password reset"
 
-    print("Starting orchestrator-worker pattern...")
+    print("Starting orchestrator-worker...")
     result = workflow.invoke({"input": task})
 
     codebase = OrchestratorCodebase("06_orchestrator_worker", task)
