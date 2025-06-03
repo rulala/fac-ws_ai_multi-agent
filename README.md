@@ -75,8 +75,8 @@ For each pattern:
 
 ### Pattern 1: Sequential Workflow
 
-- **File**: `patterns/01_sequential_workflow.py`  
-- **Concept**: Linear pipeline (coder → reviewer → refactorer)  
+- **File**: `patterns/01_sequential_workflow.py`
+- **Concept**: Linear pipeline (coder → reviewer → refactorer)
 - **Use case**: Predictable, step-by-step processes
 
 **Run and explore**:
@@ -139,7 +139,7 @@ python patterns/02_conditional_routing.py
 > 📊 Scores - Security: 3, Performance: 3, Readability: 8 (Lowest: 3)
 > 📊 Scores - Security: 2, Performance: 8, Readability: 8 (Lowest: 2)
 > Max iterations reached. Best score achieved: 3/10
-> 🎯 Selected best code from iteration 1 (score: 3/10) instead of final iteration
+> 🎯 Selected best code from iteration 2 (score: 3/10) instead of final iteration
 > ✅ Conditional routing codebase created in: generated/02_conditional_routing_20250602_182427/
 > ```
 
@@ -165,8 +165,8 @@ python patterns/03_parallel_processing.py
 
 ### Pattern 4: Supervisor Agents
 
-- **File**: `patterns/04_supervisor_agents.py`  
-- **Concept**: Intelligent coordination of specialist agents  
+- **File**: `patterns/04_supervisor_agents.py`
+- **Concept**: Intelligent coordination of specialist agents
 - **Use case**: Complex tasks requiring dynamic expertise
 
 **Run and explore**:
@@ -185,8 +185,8 @@ python patterns/04_supervisor_agents.py
 
 ### Pattern 5: Evaluator-Optimiser
 
-- **File**: `patterns/05_evaluator_optimiser.py`  
-- **Concept**: Continuous improvement through feedback loops  
+- **File**: `patterns/05_evaluator_optimiser.py`
+- **Concept**: Continuous improvement through feedback loops
 - **Use case**: Iteratively refinable outputs
 
 **Run and explore**:
