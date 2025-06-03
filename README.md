@@ -62,9 +62,6 @@ This workshop teaches LangGraph through architectural patterns, not code syntax.
 4. **Generated output**: Check `generated/` folder after running the patterns
 5. **Incremental Difficulty**: Each pattern builds on previous concepts
 6. **Focus on concepts, not syntax**: Focus on **when** to use each pattern, not just **how**
-7. **Generated output**: Check `generated/` folder after running the patterns
-8. **Incremental Difficulty**: Each pattern builds on previous concepts
-9. **Focus on concepts, not syntax**: Focus on **when** to use each pattern, not just **how**
 
 ## Approach Each Pattern
 
@@ -92,7 +89,7 @@ For each pattern:
 
 ## The Six Architectural Patterns
 
-### Pattern 1: Sequential Workflow
+### Pattern 1: Sequential Workflow 🔁👨‍💻🕵️🔧✅
 
 - **File**: `patterns/01_sequential_workflow.py`
 - **Concept**: Linear pipeline (coder → reviewer → refactorer)
@@ -132,7 +129,7 @@ python patterns/01_sequential_workflow.py
 
 ---
 
-### Pattern 2: Conditional Routing
+### Pattern 2: Conditional Routing ❓🛣️📊🎯
 
 - **File**: `patterns/02_conditional_routing.py`
 - **Concept**: Quality gates determine workflow paths
@@ -173,7 +170,7 @@ python patterns/02_conditional_routing.py
 
 ---
 
-### Pattern 3: Parallel Processing
+### Pattern 3: Parallel Processing 🧠⚙️⚙️⚙️📦
 
 - **File**: `patterns/03_parallel_processing.py`
 - **Concept**: Concurrent analysis by multiple specialists
@@ -198,7 +195,7 @@ python patterns/03_parallel_processing.py
 
 ---
 
-### Pattern 4: Supervisor Agents
+### Pattern 4: Supervisor Agents 🧑‍🏫🧑‍🔧🧑‍🔬🗂️
 
 - **File**: `patterns/04_supervisor_agents.py`
 - **Concept**: Intelligent coordination of specialist agents
@@ -225,7 +222,7 @@ python patterns/04_supervisor_agents.py
 
 ---
 
-### Pattern 5: Evaluator-Optimiser
+### Pattern 5: Evaluator-Optimiser 🔍📈♻️🛠️
 
 - **File**: `patterns/05_evaluator_optimiser.py`
 - **Concept**: Continuous improvement through feedback loops
@@ -250,7 +247,7 @@ python patterns/05_evaluator_optimiser.py
 
 ---
 
-### Pattern 6: Orchestrator-Worker
+### Pattern 6: Orchestrator-Worker 🎼👷👷‍♀️📋🔗
 
 - **File**: `patterns/06_orchestrator_worker.py`
 - **Concept**: Dynamic task breakdown with isolated worker execution
