@@ -81,7 +81,7 @@ For each pattern:
    >     └── AUDIT_TRAIL.md
    > ```
 
-4. **Complete** the 4 exercises by modifying the code
+4. **Complete** the 4 exercises by modifying the code in the file you just ran (the one in `patterns/`)
 5. **Discuss** when you'd use this pattern vs others
 
 ## The Five Architectural Patterns
@@ -233,7 +233,7 @@ python patterns/05_evaluator_optimiser.py
 - Generated code appears in `generated/` folder with timestamps
 - Each pattern builds on previous concepts
 - Focus on **when** to use each pattern, not just **how**
-- Pattern 6 shows **what** to add for production, applicable to all patterns
+- Pattern 6 (stretch goal, below) shows **what** to add for production, applicable to all patterns
 
 ### Pattern Selection Guide
 
