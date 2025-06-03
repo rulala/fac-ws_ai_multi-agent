@@ -89,7 +89,7 @@ For each pattern:
 
 ## The Six Architectural Patterns
 
-### Pattern 1: Sequential Workflow 🔁👨‍💻🕵️🔧✅
+### [Pattern 1: Sequential Workflow](PATTERNS.md#pattern-1-sequential-workflow) 🔁👨‍💻🕵️🔧✅
 
 - **File**: `patterns/01_sequential_workflow.py`
 - **Concept**: Linear pipeline (coder → reviewer → refactorer)
@@ -129,7 +129,7 @@ python patterns/01_sequential_workflow.py
 
 ---
 
-### Pattern 2: Conditional Routing ❓🛣️📊🎯
+### [Pattern 2: Conditional Routing](PATTERNS.md#pattern-2-conditional-routing) ❓🛣️📊🎯
 
 - **File**: `patterns/02_conditional_routing.py`
 - **Concept**: Quality gates determine workflow paths
@@ -170,7 +170,7 @@ python patterns/02_conditional_routing.py
 
 ---
 
-### Pattern 3: Parallel Processing 🧠⚙️⚙️⚙️📦
+### [Pattern 3: Parallel Processing](PATTERNS.md#pattern-3-parallel-processing) 🧠⚙️⚙️⚙️📦
 
 - **File**: `patterns/03_parallel_processing.py`
 - **Concept**: Concurrent analysis by multiple specialists
@@ -195,7 +195,7 @@ python patterns/03_parallel_processing.py
 
 ---
 
-### Pattern 4: Supervisor Agents 🧑‍🏫🧑‍🔧🧑‍🔬🗂️
+### [Pattern 4: Supervisor Agents](PATTERNS.md#pattern-4-supervisor-agents) 🧑‍🏫🧑‍🔧🧑‍🔬🗂️
 
 - **File**: `patterns/04_supervisor_agents.py`
 - **Concept**: Intelligent coordination of specialist agents
@@ -222,7 +222,7 @@ python patterns/04_supervisor_agents.py
 
 ---
 
-### Pattern 5: Evaluator-Optimiser 🔍📈♻️🛠️
+### [Pattern 5: Evaluator-Optimiser](PATTERNS.md#pattern-5-evaluator-optimiser) 🔍📈♻️🛠️
 
 - **File**: `patterns/05_evaluator_optimiser.py`
 - **Concept**: Continuous improvement through feedback loops
@@ -247,7 +247,7 @@ python patterns/05_evaluator_optimiser.py
 
 ---
 
-### Pattern 6: Orchestrator-Worker 🎼👷👷‍♀️📋🔗
+### [Pattern 6: Orchestrator-Worker](PATTERNS.md#pattern-6-orchestrator-worker) 🎼👷👷‍♀️📋🔗
 
 - **File**: `patterns/06_orchestrator_worker.py`
 - **Concept**: Dynamic task breakdown with isolated worker execution
