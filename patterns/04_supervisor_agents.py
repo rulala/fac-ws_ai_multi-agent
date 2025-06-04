@@ -15,6 +15,7 @@ class SupervisorState(TypedDict):
     quality_report: str
     completed_agents: list
     final_analysis: str
+    next_agent: str
 
 
 llm = ChatOpenAI(model="gpt-4.1-nano")
@@ -48,7 +49,12 @@ synthesis_prompt = ChatPromptTemplate.from_messages([
 
 def coder_agent(state: SupervisorState) -> SupervisorState:
     response = llm.invoke(coder_prompt.format_messages(input=state["input"]))
-    return {"code": response.content, "completed_agents": []}
+    return {
+        "code": response.content,
+        "completed_agents": [],
+        "security_report": "",
+        "quality_report": ""
+    }
 
 
 def supervisor_agent(state: SupervisorState) -> SupervisorState:
@@ -65,7 +71,7 @@ def supervisor_agent(state: SupervisorState) -> SupervisorState:
 def security_expert_agent(state: SupervisorState) -> SupervisorState:
     response = llm.invoke(
         security_expert_prompt.format_messages(code=state["code"]))
-    completed = state.get("completed_agents", [])
+    completed = state.get("completed_agents", []).copy()
     completed.append("security_expert")
     return {"security_report": response.content, "completed_agents": completed}
 
@@ -73,7 +79,7 @@ def security_expert_agent(state: SupervisorState) -> SupervisorState:
 def quality_expert_agent(state: SupervisorState) -> SupervisorState:
     response = llm.invoke(
         quality_expert_prompt.format_messages(code=state["code"]))
-    completed = state.get("completed_agents", [])
+    completed = state.get("completed_agents", []).copy()
     completed.append("quality_expert")
     return {"quality_report": response.content, "completed_agents": completed}
 
