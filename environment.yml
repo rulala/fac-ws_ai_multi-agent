@@ -8,6 +8,8 @@ dependencies:
   - python=3.13.3
   - python-dotenv=1.1.0
   - langchain=0.3.25
+  - radon=4.5.1
+  - matplotlib=3.10.0
   - pip
   - pip:
       - langgraph==0.4.7
