@@ -3,7 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START, END
 from typing import TypedDict, Literal
 from dotenv import load_dotenv
-from utils.codebase_utils import SupervisorCodebase
+from utils import SupervisorCodebase
 
 load_dotenv()
 
