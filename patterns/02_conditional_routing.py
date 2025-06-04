@@ -8,12 +8,12 @@ from utils import ConditionalCodebase
 load_dotenv()
 
 
-class CodeReviewState(TypedDict):
+class CodeAnalysisState(TypedDict):
     input: str
-    code: list
-    review: str
-    quality_score: int
-    iteration_count: int
+    code: str
+    route_decision: str
+    specialist_analysis: str
+    final_report: str
 
 
 llm = ChatOpenAI(model="gpt-4.1-nano")
@@ -23,87 +23,108 @@ coder_prompt = ChatPromptTemplate.from_messages([
     ("human", "{input}")
 ])
 
-reviewer_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Code Reviewer. Provide feedback on code quality and best practices."),
-    ("human", "Review this code:\n{code}")
+router_prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a Router. Analyse code and identify if it needs security, performance, or general review. Respond with just: 'security', 'performance', or 'general'."),
+    ("human", "Route this code for expert review:\n{code}")
 ])
 
-evaluator_prompt = ChatPromptTemplate.from_messages([
-    ("system", "Rate this code from 1-10 based on quality. Respond with just the number."),
-    ("human", "Code:\n{code}\n\nReview:\n{review}")
+security_expert_prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a Security Expert. Focus on vulnerabilities, authentication, authorization, input validation, and secure coding practices."),
+    ("human", "Provide security analysis for:\n{code}")
 ])
 
-refactorer_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Refactoring Expert. Improve the code based on review feedback."),
+performance_expert_prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a Performance Expert. Focus on algorithmic complexity, optimization, resource usage, and scalability."),
+    ("human", "Provide performance analysis for:\n{code}")
+])
+
+general_expert_prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a General Code Expert. Focus on code quality, maintainability, readability, and best practices."),
+    ("human", "Provide general code analysis for:\n{code}")
+])
+
+synthesis_prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a Technical Lead. Synthesize the specialist analysis into actionable recommendations."),
     ("human",
-     "Code:\n{code}\n\nFeedback:\n{review}\n\nRefactor to address issues:")
+     "Specialist Analysis:\n{specialist_analysis}\n\nProvide final recommendations:")
 ])
 
 
-def coder_agent(state: CodeReviewState) -> CodeReviewState:
+def coder_agent(state: CodeAnalysisState) -> CodeAnalysisState:
     response = llm.invoke(coder_prompt.format_messages(input=state["input"]))
-    return {"code": [response.content], "iteration_count": state.get("iteration_count", 0)}
+    return {"code": response.content}
 
 
-def reviewer_agent(state: CodeReviewState) -> CodeReviewState:
-    current_code = state["code"][-1] if state["code"] else ""
-    response = llm.invoke(reviewer_prompt.format_messages(code=current_code))
-    return {"review": response.content}
+def router_agent(state: CodeAnalysisState) -> CodeAnalysisState:
+    response = llm.invoke(router_prompt.format_messages(code=state["code"]))
+    route = response.content.strip().lower()
+
+    if route not in ["security", "performance", "general"]:
+        route = "general"
+
+    print(f"🎯 Router decision: {route}")
+    return {"route_decision": route}
 
 
-def quality_evaluator_agent(state: CodeReviewState) -> CodeReviewState:
-    current_code = state["code"][-1] if state["code"] else ""
-    response = llm.invoke(evaluator_prompt.format_messages(
-        code=current_code, review=state["review"]
+def security_expert_agent(state: CodeAnalysisState) -> CodeAnalysisState:
+    response = llm.invoke(
+        security_expert_prompt.format_messages(code=state["code"]))
+    print("🔒 Security expert analyzing code")
+    return {"specialist_analysis": response.content, "route_decision": "security"}
+
+
+def performance_expert_agent(state: CodeAnalysisState) -> CodeAnalysisState:
+    response = llm.invoke(
+        performance_expert_prompt.format_messages(code=state["code"]))
+    print("⚡ Performance expert analyzing code")
+    return {"specialist_analysis": response.content, "route_decision": "performance"}
+
+
+def general_expert_agent(state: CodeAnalysisState) -> CodeAnalysisState:
+    response = llm.invoke(
+        general_expert_prompt.format_messages(code=state["code"]))
+    print("📋 General expert analyzing code")
+    return {"specialist_analysis": response.content, "route_decision": "general"}
+
+
+def synthesis_agent(state: CodeAnalysisState) -> CodeAnalysisState:
+    response = llm.invoke(synthesis_prompt.format_messages(
+        specialist_analysis=state["specialist_analysis"]
     ))
-    try:
-        score = int(response.content.strip())
-    except:
-        score = 5
-    return {"quality_score": score}
+
+    route = state.get("route_decision", "unknown")
+    print(f"🎯 Synthesis complete - routed via {route} expert")
+    return {"final_report": response.content}
 
 
-def refactorer_agent(state: CodeReviewState) -> CodeReviewState:
-    current_code = state["code"][-1] if state["code"] else ""
-    response = llm.invoke(refactorer_prompt.format_messages(
-        code=current_code, review=state["review"]
-    ))
-    updated_code_list = state["code"] + [response.content]
-    return {
-        "code": updated_code_list,
-        "iteration_count": state["iteration_count"] + 1
-    }
+def route_to_specialist(state: CodeAnalysisState) -> Literal["security_expert", "performance_expert", "general_expert"]:
+    route = state["route_decision"]
+    return f"{route}_expert"
 
 
-def quality_gate(state: CodeReviewState) -> Literal["refactor", "complete"]:
-    quality_threshold = 7
-    max_iterations = 3
-
-    # always at least one round of refactoring by tracking iteration_count (if = 0 will always refactor)
-    if state["quality_score"] >= quality_threshold and state["iteration_count"] > 0:
-        return "complete"
-    elif state["iteration_count"] >= max_iterations:
-        print(f"Max iterations reached. Final score: {state['quality_score']}")
-        return "complete"
-    else:
-        return "refactor"
-
-
-builder = StateGraph(CodeReviewState)
+builder = StateGraph(CodeAnalysisState)
 builder.add_node("coder", coder_agent)
-builder.add_node("reviewer", reviewer_agent)
-builder.add_node("quality_evaluator", quality_evaluator_agent)
-builder.add_node("refactorer", refactorer_agent)
+builder.add_node("router", router_agent)
+builder.add_node("security_expert", security_expert_agent)
+builder.add_node("performance_expert", performance_expert_agent)
+builder.add_node("general_expert", general_expert_agent)
+builder.add_node("synthesis", synthesis_agent)
 
 builder.add_edge(START, "coder")
-builder.add_edge("coder", "reviewer")
-builder.add_edge("reviewer", "quality_evaluator")
+builder.add_edge("coder", "router")
 builder.add_conditional_edges(
-    "quality_evaluator",
-    quality_gate,
-    {"refactor": "refactorer", "complete": END}
+    "router",
+    route_to_specialist,
+    {
+        "security_expert": "security_expert",
+        "performance_expert": "performance_expert",
+        "general_expert": "general_expert"
+    }
 )
-builder.add_edge("refactorer", "reviewer")
+builder.add_edge("security_expert", "synthesis")
+builder.add_edge("performance_expert", "synthesis")
+builder.add_edge("general_expert", "synthesis")
+builder.add_edge("synthesis", END)
 
 workflow = builder.compile()
 

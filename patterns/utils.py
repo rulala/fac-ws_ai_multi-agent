@@ -105,61 +105,53 @@ Execution timing analysis available in debug output."""
 class ConditionalCodebase(CodebaseGenerator):
     def generate(self, result: Dict[str, Any]) -> None:
         self.create_folder()
+        self.write_python_file("generated_code", result.get('code', ''))
 
-        code_list = result.get('code', [''])
-        if isinstance(code_list, str):
-            code_list = [code_list]
+        route_decision = result.get("route_decision", "unknown")
+        specialist_analysis = result.get("specialist_analysis", "")
+        final_report = result.get("final_report", "")
 
-        final_code = code_list[-1] if code_list else ''
-        self.write_python_file("final_code", final_code)
+        specialist_section = ""
+        if specialist_analysis:
+            specialist_section = f"""
+## Specialist Analysis ({route_decision.title()} Expert)
+{specialist_analysis}"""
 
-        previous_iterations_section = ""
-        if len(code_list) > 1:
-            previous_iterations_section = "\n## Previous Iterations\n\n"
-            for i, code_version in enumerate(code_list[:-1]):
-                iteration_label = "Original Code" if i == 0 else f"Iteration {i}"
-                previous_iterations_section += f"""### {iteration_label}
-```python
-{extract_code_from_response(code_version)}
-```
+        recommendations_section = ""
+        if final_report:
+            recommendations_section = f"""
+## Final Recommendations
+{final_report}"""
 
-"""
-
-        quality_metrics_section = self._build_quality_metrics_section(result)
-
-        best_code_section = ""
-        if result.get('best_code_index') is not None and result.get('best_lowest_score') is not None:
-            best_code_section = f"""
-
-## Best Code Selection
-- **Best iteration:** {result['best_code_index'] + 1}
-- **Best score:** {result['best_lowest_score']}/10
-- **Selection method:** Highest scoring version across all iterations"""
-
-        fast_track_section = ""
-        if result.get('iteration_count', 0) == 0 and result.get('quality_score', 0) >= 9:
-            fast_track_section = f"""
-
-## Fast Track Activation
-Initial code scored {result['quality_score']}/10 - skipped refactoring entirely."""
+        files_generated = "- `generated_code.py` - Code routed through specialist review"
 
         audit_content = f"""# Conditional Routing Audit Trail
 
-**Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
-**Task:** {self.task}  
+**Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+**Task:** {self.task}
 **Pattern:** Conditional Routing
 
-## Final Code
+## Generated Code
 ```python
-{extract_code_from_response(final_code)}
+{extract_code_from_response(result.get('code', 'No code generated'))}
 ```
 
-## Review Feedback
-{result.get('review', 'No review available')}
+## Routing Decision
+**Selected Expert:** {route_decision}{specialist_section}{recommendations_section}
 
-{quality_metrics_section}{best_code_section}{fast_track_section}{previous_iterations_section}
+## Workflow Execution
+1. **Coder Agent** → Generated initial code
+2. **Router Agent** → Analyzed content and selected `{route_decision}` expert
+3. **{route_decision.title()} Expert** → Provided domain-specific analysis
+4. **Synthesis Agent** → Created final recommendations
+
+## Routing Flow
+```
+Coder → Router → {route_decision.title()} Expert → Synthesis
+```
+
 ## Files Generated
-- `final_code.py` - Quality-approved implementation
+{files_generated}
 
 ---
 *Generated using LangGraph Conditional Routing Pattern*
@@ -167,44 +159,6 @@ Initial code scored {result['quality_score']}/10 - skipped refactoring entirely.
         self.write_text_file("AUDIT_TRAIL.md", audit_content)
         print(
             f"✅ Conditional routing codebase created in: {self.folder_name}/")
-
-    def _build_quality_metrics_section(self, result: Dict[str, Any]) -> str:
-        if all(key in result for key in ['security_score', 'performance_score', 'readability_score']):
-            security = result['security_score']
-            performance = result['performance_score']
-            readability = result['readability_score']
-            lowest = result.get('lowest_score', min(
-                security, performance, readability))
-
-            def score_bar(score: int) -> str:
-                filled = "█" * score
-                empty = "░" * (10 - score)
-                return f"{filled}{empty} ({score}/10)"
-
-            return f"""## Quality Metrics (Multi-Criteria Evaluation)
-
-| Criterion    | Score | Visual                    | Status |
-|--------------|-------|---------------------------|--------|
-| Security     | {security}/10  | {score_bar(security)}     | {'✅ Pass' if security >= 7 else '❌ Fail'} |
-| Performance  | {performance}/10  | {score_bar(performance)}  | {'✅ Pass' if performance >= 7 else '❌ Fail'} |
-| Readability  | {readability}/10  | {score_bar(readability)}  | {'✅ Pass' if readability >= 7 else '❌ Fail'} |
-| **Overall**  | **{lowest}/10** | **{score_bar(lowest)}** | **{'✅ All Pass' if lowest >= 7 else '❌ Needs Work'}** |
-
-**Evaluation Method:** Lowest score determines overall quality  
-**Iterations:** {result.get('iteration_count', 0)}  
-**Threshold:** 7/10 minimum for all criteria  
-
-"""
-        else:
-            quality_score = result.get('quality_score', 'N/A')
-            iteration_count = result.get('iteration_count', 0)
-
-            return f"""## Quality Metrics
-- **Score:** {quality_score}/10
-- **Iterations:** {iteration_count}
-- **Threshold:** 7/10
-
-"""
 
 
 class ParallelCodebase(CodebaseGenerator):
