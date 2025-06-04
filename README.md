@@ -46,7 +46,7 @@ This workshop teaches LangGraph through architectural patterns, not code syntax.
    - **with pip only** (easier for Windows):
 
    ```bash
-   pip install langchain-openai langgraph python-dotenv
+   pip install langchain-openai langgraph python-dotenv radon matplotlib
    ```
 
 3. **Create `.env` file**:
