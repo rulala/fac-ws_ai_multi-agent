@@ -2,24 +2,17 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START, END
 from typing import TypedDict, Literal
-from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 from utils import EvaluatorCodebase
 
 load_dotenv()
 
 
-class Evaluation(BaseModel):
-    score: int = Field(description="Quality score from 1-10")
-    feedback: str = Field(description="Specific improvement suggestions")
-    should_continue: bool = Field(
-        description="Whether another iteration is needed")
-
-
 class OptimisationState(TypedDict):
     input: str
-    code: str
-    current_evaluation: dict
+    code: list
+    quality_score: int
+    quality_scores: list
     iteration_count: int
     final_code: str
 
@@ -27,76 +20,76 @@ class OptimisationState(TypedDict):
 llm = ChatOpenAI(model="gpt-4.1-nano")
 
 generator_prompt = ChatPromptTemplate.from_messages([
-    ("system",
-     "You are a Senior Software Engineer. Write ONLY Python code - no bash commands, no installation instructions, just the Python implementation. {feedback}"),
+    ("system", "You are a Senior Software Engineer. Write ONLY Python code - no bash commands, no installation instructions, just the Python implementation."),
     ("human", "{input}")
 ])
 
 evaluator_prompt = ChatPromptTemplate.from_messages([
-    ("system", "Score code quality 1-10. Score 8+ suggests completion."),
-    ("human", "Evaluate this code:\n{code}")
+    ("system", "Rate this code quality from 1-10. Consider security, performance, and readability. Respond with just the number."),
+    ("human", "Code:\n{code}")
 ])
 
 optimiser_prompt = ChatPromptTemplate.from_messages([
-    ("system", "Improve code based on feedback: {feedback}"),
-    ("human", "Optimise this code:\n{code}")
+    ("system", "Improve this code based on quality concerns. Focus on security, performance, and readability."),
+    ("human", "Code:\n{code}")
 ])
 
 
 def code_generator(state: OptimisationState) -> OptimisationState:
-    feedback = ""
-    if state.get("current_evaluation"):
-        feedback = f"Previous feedback: {state['current_evaluation']['feedback']}"
-
-    response = llm.invoke(generator_prompt.format_messages(
-        input=state["input"], feedback=feedback
-    ))
-
-    return {"code": response.content, "iteration_count": state.get("iteration_count", 0)}
+    response = llm.invoke(
+        generator_prompt.format_messages(input=state["input"]))
+    return {"code": [response.content], "iteration_count": 0, "quality_scores": []}
 
 
-def evaluator_agent(state: OptimisationState) -> OptimisationState:
-    structured_llm = llm.with_structured_output(Evaluation)
-    response = structured_llm.invoke(
-        evaluator_prompt.format_messages(code=state["code"]))
+def quality_evaluator_agent(state: OptimisationState) -> OptimisationState:
+    current_code = state["code"][-1] if state["code"] else ""
 
-    evaluation_dict = {
-        "score": response.score,
-        "feedback": response.feedback,
-        "should_continue": response.should_continue
-    }
+    response = llm.invoke(evaluator_prompt.format_messages(code=current_code))
 
-    return {"current_evaluation": evaluation_dict}
+    try:
+        score = int(response.content.strip())
+    except:
+        score = 5
+
+    print(f"📊 Quality score: {score}/10")
+
+    # Add score to history
+    quality_scores = state.get("quality_scores", [])
+    quality_scores.append(score)
+
+    return {"quality_score": score, "quality_scores": quality_scores}
 
 
 def optimiser_agent(state: OptimisationState) -> OptimisationState:
-    current_eval = state["current_evaluation"]
+    current_code = state["code"][-1] if state["code"] else ""
 
-    response = llm.invoke(optimiser_prompt.format_messages(
-        code=state["code"], feedback=current_eval["feedback"]
-    ))
+    response = llm.invoke(optimiser_prompt.format_messages(code=current_code))
 
+    updated_code_list = state["code"] + [response.content]
     return {
-        "code": response.content,
+        "code": updated_code_list,
         "iteration_count": state["iteration_count"] + 1
     }
 
 
 def finalise_code(state: OptimisationState) -> OptimisationState:
-    return {"final_code": state["code"]}
+    final_code = state["code"][-1] if state["code"] else ""
+    return {"final_code": final_code}
 
 
 def should_continue_optimisation(state: OptimisationState) -> Literal["optimise", "finalise"]:
-    current_eval = state.get("current_evaluation", {})
+    quality_threshold = 7
+    max_iterations = 3
+
     iteration_count = state.get("iteration_count", 0)
+    quality_score = state.get("quality_score", 0)
 
-    if iteration_count >= 3:
+    if iteration_count >= max_iterations:
+        print(f"Max iterations reached. Final score: {quality_score}/10")
         return "finalise"
 
-    if not current_eval.get("should_continue", True):
-        return "finalise"
-
-    if current_eval.get("score", 0) >= 8:
+    if quality_score >= quality_threshold and iteration_count > 0:
+        print(f"✅ Quality threshold reached! Score: {quality_score}/10")
         return "finalise"
 
     return "optimise"
@@ -104,7 +97,7 @@ def should_continue_optimisation(state: OptimisationState) -> Literal["optimise"
 
 builder = StateGraph(OptimisationState)
 builder.add_node("generator", code_generator)
-builder.add_node("evaluator", evaluator_agent)
+builder.add_node("evaluator", quality_evaluator_agent)
 builder.add_node("optimiser", optimiser_agent)
 builder.add_node("finalise", finalise_code)
 

@@ -22,7 +22,8 @@ def generator(state: State) -> State:
 
 
 def evaluator(state: State) -> State:
-    response = llm.invoke(f"Rate code quality 1-10:\n{state['code']}\nJust the number:")
+    response = llm.invoke(
+        f"Rate code quality 1-10:\n{state['code']}\nJust the number:")
     try:
         score = int(response.content.strip())
     except:
@@ -50,12 +51,14 @@ builder.add_node("optimiser", optimiser)
 
 builder.add_edge(START, "generator")
 builder.add_edge("generator", "evaluator")
-builder.add_conditional_edges("evaluator", should_continue, {"optimise": "optimiser", "done": END})
+builder.add_conditional_edges("evaluator", should_continue, {
+                              "optimise": "optimiser", "done": END})
 builder.add_edge("optimiser", "evaluator")
 
 workflow = builder.compile()
 
 if __name__ == "__main__":
     result = workflow.invoke({"input": "file upload API"})
-    print(f"FINAL CODE (Score: {result['score']}, Iterations: {result['iterations']}):")
+    print(
+        f"FINAL CODE (Score: {result['score']}, Iterations: {result['iterations']}):")
     print(result["code"])
