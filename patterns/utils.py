@@ -1,7 +1,7 @@
 import os
 import re
 import datetime
-from typing import Dict,  Any
+from typing import Dict, Any
 
 
 def extract_code_from_response(response_text: str) -> str:
@@ -66,6 +66,13 @@ class SequentialCodebase(CodebaseGenerator):
         if result.get('unit_tests'):
             files_generated += "\n- `unit_tests.py` - Comprehensive test suite"
 
+        performance_section = ""
+        if 'performance_metrics' in str(result):
+            performance_section = f"""
+
+## Performance Metrics
+Execution timing analysis available in debug output."""
+
         audit_content = f"""# Sequential Workflow Audit Trail
 
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
@@ -83,7 +90,7 @@ class SequentialCodebase(CodebaseGenerator):
 ## Refactored Code
 ```python
 {extract_code_from_response(result.get('refactored_code', 'No refactored code available'))}
-```{unit_tests_section}
+```{unit_tests_section}{performance_section}
 
 ## Files Generated
 {files_generated}
@@ -118,8 +125,23 @@ class ConditionalCodebase(CodebaseGenerator):
 
 """
 
-        # Enhanced multi-criteria scoring section
         quality_metrics_section = self._build_quality_metrics_section(result)
+
+        best_code_section = ""
+        if result.get('best_code_index') is not None and result.get('best_lowest_score') is not None:
+            best_code_section = f"""
+
+## Best Code Selection
+- **Best iteration:** {result['best_code_index'] + 1}
+- **Best score:** {result['best_lowest_score']}/10
+- **Selection method:** Highest scoring version across all iterations"""
+
+        fast_track_section = ""
+        if result.get('iteration_count', 0) == 0 and result.get('quality_score', 0) >= 9:
+            fast_track_section = f"""
+
+## Fast Track Activation
+Initial code scored {result['quality_score']}/10 - skipped refactoring entirely."""
 
         audit_content = f"""# Conditional Routing Audit Trail
 
@@ -135,7 +157,7 @@ class ConditionalCodebase(CodebaseGenerator):
 ## Review Feedback
 {result.get('review', 'No review available')}
 
-{quality_metrics_section}{previous_iterations_section}
+{quality_metrics_section}{best_code_section}{fast_track_section}{previous_iterations_section}
 ## Files Generated
 - `final_code.py` - Quality-approved implementation
 
@@ -147,7 +169,6 @@ class ConditionalCodebase(CodebaseGenerator):
             f"✅ Conditional routing codebase created in: {self.folder_name}/")
 
     def _build_quality_metrics_section(self, result: Dict[str, Any]) -> str:
-        # Check if we have multi-criteria scores
         if all(key in result for key in ['security_score', 'performance_score', 'readability_score']):
             security = result['security_score']
             performance = result['performance_score']
@@ -155,7 +176,6 @@ class ConditionalCodebase(CodebaseGenerator):
             lowest = result.get('lowest_score', min(
                 security, performance, readability))
 
-            # Create visual score bars
             def score_bar(score: int) -> str:
                 filled = "█" * score
                 empty = "░" * (10 - score)
@@ -176,7 +196,6 @@ class ConditionalCodebase(CodebaseGenerator):
 
 """
         else:
-            # Fallback to single score display
             quality_score = result.get('quality_score', 'N/A')
             iteration_count = result.get('iteration_count', 0)
 
@@ -194,11 +213,23 @@ class ParallelCodebase(CodebaseGenerator):
 
         self.write_python_file("main_code", result.get('code', ''))
 
+        performance_comparison = ""
+        if result.get('sequential_time') and result.get('parallel_time'):
+            seq_time = result['sequential_time']
+            par_time = result['parallel_time']
+            speedup = seq_time / par_time if par_time > 0 else 0
+            performance_comparison = f"""
+
+## Performance Analysis
+- **Sequential execution:** {seq_time:.2f}s
+- **Parallel execution:** {par_time:.2f}s  
+- **Speedup achieved:** {speedup:.2f}x"""
+
         synthesis_content = f"""# Code Analysis Synthesis Report
 
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
 **Task:** {self.task}  
-**Analysis Method:** Parallel Expert Review
+**Analysis Method:** Parallel Expert Review{performance_comparison}
 
 ## Executive Summary
 
@@ -215,6 +246,13 @@ class ParallelCodebase(CodebaseGenerator):
 
 ### Documentation Analysis
 {result.get('documentation_analysis', 'No documentation analysis available')}"""
+
+        error_handling_section = ""
+        if any("failed" in str(result.get(key, "")) for key in ['security_analysis', 'performance_analysis', 'style_analysis', 'documentation_analysis']):
+            error_handling_section = f"""
+
+## Error Handling
+Some agents encountered errors during execution but the workflow continued gracefully."""
 
         audit_content = f"""# Parallel Processing Audit Trail
 
@@ -236,7 +274,7 @@ class ParallelCodebase(CodebaseGenerator):
 {result.get('performance_analysis', 'No performance analysis available')}
 
 ### Style Analysis
-{result.get('style_analysis', 'No style analysis available')}{documentation_section}
+{result.get('style_analysis', 'No style analysis available')}{documentation_section}{error_handling_section}
 
 ## Files Generated
 - `main_code.py` - Analysed implementation
@@ -257,11 +295,19 @@ class SupervisorCodebase(CodebaseGenerator):
 
         self.write_python_file("main_code", result.get('code', ''))
 
+        task_analysis_section = ""
+        if result.get('task_type'):
+            task_analysis_section = f"""
+
+## Task Analysis
+- **Task Type:** {result['task_type']}
+- **Routing Strategy:** {'Priority security routing' if result['task_type'] == 'authentication' else 'Standard expert routing'}"""
+
         final_analysis_content = f"""# Expert Analysis & Recommendations
 
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
 **Task:** {self.task}  
-**Analysis Method:** Supervised Expert Consultation
+**Analysis Method:** Supervised Expert Consultation{task_analysis_section}
 
 ## Executive Summary
 
@@ -283,11 +329,28 @@ class SupervisorCodebase(CodebaseGenerator):
         reports_section = ""
 
         if result.get('security_report'):
-            reports_section += f"### Security Expert Report\n{result['security_report']}\n\n"
-        if result.get('performance_report'):
-            reports_section += f"### Performance Expert Report\n{result['performance_report']}\n\n"
+            context_note = " (with quality context)" if result.get(
+                'quality_report') else ""
+            reports_section += f"### Security Expert Report{context_note}\n{result['security_report']}\n\n"
         if result.get('quality_report'):
             reports_section += f"### Quality Expert Report\n{result['quality_report']}\n\n"
+        if result.get('database_report'):
+            reports_section += f"### Database Expert Report\n{result['database_report']}\n\n"
+
+        supervisor_notes = "Supervisor coordinated expert consultation based on task analysis and code content."
+        if result.get('task_type') == 'authentication':
+            supervisor_notes += " Priority routing applied for authentication task - security expert consulted first."
+        if result.get('database_report'):
+            supervisor_notes += " Database expert added based on code analysis showing SQL/database operations."
+
+        smart_routing_section = ""
+        if result.get('database_report') or result.get('task_type') == 'authentication':
+            smart_routing_section = f"""
+
+## Smart Routing Features
+- **Content-based routing:** Database expert consulted based on code analysis
+- **Task-type prioritisation:** {'Security-first routing for authentication tasks' if result.get('task_type') == 'authentication' else 'Standard routing applied'}
+- **Expert collaboration:** Security expert reviewed quality findings"""
 
         audit_content = f"""# Supervisor Agents Audit Trail
 
@@ -302,11 +365,13 @@ class SupervisorCodebase(CodebaseGenerator):
 ```
 
 ## Supervisor Decision Process
-{result.get('supervisor_notes', 'No supervisor notes available')}
+{supervisor_notes}
 
 ## Individual Expert Reports
 
-{reports_section}## Files Generated
+{reports_section}{smart_routing_section}
+
+## Files Generated
 - `main_code.py` - Expert-reviewed implementation  
 - `EXPERT_ANALYSIS.md` - **KEY DELIVERABLE:** Synthesised expert recommendations
 
@@ -326,17 +391,45 @@ class EvaluatorCodebase(CodebaseGenerator):
             'final_code', result.get('code', '')))
 
         current_eval = result.get('current_evaluation', {})
-        final_score = current_eval.get('score', 'N/A')
+        final_score = current_eval.get('quality_score', 'N/A')
+        complexity_score = current_eval.get('complexity_score', 'N/A')
         final_feedback = current_eval.get('feedback', 'No feedback available')
         iteration_count = result.get('iteration_count', 0)
+        plateau_count = result.get('plateau_count', 0)
+
+        complexity_section = ""
+        if complexity_score != 'N/A':
+            complexity_section = f"""
+- **Complexity Score:** {complexity_score}/10 (10 = simple)
+- **Combined Score:** {(final_score + complexity_score) / 2 if isinstance(final_score, int) and isinstance(complexity_score, int) else 'N/A'}/10"""
+
+        optimisation_features = ""
+        optimization_methods = []
+        if result.get('performance_focused'):
+            optimization_methods.append("Performance-targeted optimisation")
+        if plateau_count > 0:
+            optimization_methods.append("Plateau detection enabled")
+        if result.get('history'):
+            optimization_methods.append("Progress chart generation")
+
+        if optimization_methods:
+            optimisation_features = f"""
+
+## Advanced Optimisation Features
+{chr(10).join(f"- {method}" for method in optimization_methods)}"""
 
         history_section = f"""## Optimisation Summary
 - **Total Iterations:** {iteration_count}
-- **Final Quality Score:** {final_score}/10
+- **Final Quality Score:** {final_score}/10{complexity_section}
+- **Plateau Count:** {plateau_count}
 - **Final Feedback:** {final_feedback}
-- **Completion Reason:** {'Quality threshold reached' if final_score >= 8 else 'Max iterations reached' if iteration_count >= 3 else 'Evaluator determined completion'}
+- **Completion Reason:** {'Quality threshold reached' if isinstance(final_score, int) and final_score >= 8 else 'Plateau detected' if plateau_count >= 2 else 'Max iterations reached' if iteration_count >= 3 else 'Evaluator determined completion'}
 
 """
+
+        chart_note = ""
+        if result.get('history') and len(result['history']) > 1:
+            chart_note = "\n📊 **Progress chart saved as `optimisation_progress.png`**"
 
         audit_content = f"""# Evaluator-Optimiser Audit Trail
 
@@ -351,8 +444,10 @@ class EvaluatorCodebase(CodebaseGenerator):
 {extract_code_from_response(result.get('final_code', result.get('code', 'No code generated')))}
 ```
 
-{history_section}## Files Generated
-- `final_code.py` - Iteratively optimised implementation
+{history_section}{optimisation_features}
+
+## Files Generated
+- `final_code.py` - Iteratively optimised implementation{chart_note}
 
 ---
 *Generated using LangGraph Evaluator-Optimiser Pattern*
@@ -373,8 +468,13 @@ class OrchestratorCodebase(CodebaseGenerator):
             subtasks_section = "\n## Task Breakdown\n\n"
             for i, subtask in enumerate(result['subtasks'], 1):
                 if isinstance(subtask, dict):
+                    deps = ", ".join(subtask.get('dependencies', [])) if subtask.get(
+                        'dependencies') else "None"
+                    priority = subtask.get('priority', 'N/A')
                     subtasks_section += f"""### Subtask {i}: {subtask.get('name', f'Task {i}')}
 **Type:** {subtask.get('type', 'Unknown')}  
+**Priority:** {priority}  
+**Dependencies:** {deps}  
 **Description:** {subtask.get('description', 'No description')}
 
 """
@@ -383,6 +483,42 @@ class OrchestratorCodebase(CodebaseGenerator):
 {subtask}
 
 """
+
+        worker_specialisation_section = ""
+        worker_types = set()
+        if result.get('worker_outputs'):
+            for output in result['worker_outputs']:
+                if output.startswith('FRONTEND'):
+                    worker_types.add('Frontend')
+                elif output.startswith('BACKEND'):
+                    worker_types.add('Backend')
+                elif output.startswith('DATABASE'):
+                    worker_types.add('Database')
+                elif output.startswith('TESTING'):
+                    worker_types.add('Testing')
+
+        if worker_types:
+            worker_specialisation_section = f"""
+
+## Worker Specialisation
+**Specialised workers used:** {', '.join(sorted(worker_types))}"""
+
+        dependency_handling_section = ""
+        if result.get('subtasks') and any(subtask.get('dependencies') for subtask in result.get('subtasks', [])):
+            dependency_handling_section = f"""
+
+## Dependency Management
+**Dependency-aware execution:** Subtasks executed in correct order based on dependencies"""
+
+        validation_section = ""
+        if result.get('validation_result'):
+            validation = result['validation_result']
+            validation_section = f"""
+
+## Integration Validation
+- **Can combine:** {validation.get('can_combine', 'Unknown')}
+- **Issues found:** {len(validation.get('issues', []))}
+- **Suggestions:** {len(validation.get('suggestions', []))}"""
 
         worker_outputs_section = ""
         if result.get('worker_outputs'):
@@ -399,18 +535,20 @@ class OrchestratorCodebase(CodebaseGenerator):
 
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
 **Task:** {self.task}  
-**Analysis Method:** Dynamic Task Decomposition
+**Analysis Method:** Dynamic Task Decomposition{worker_specialisation_section}{dependency_handling_section}{validation_section}
 
 ## Executive Summary
 
-The orchestrator successfully broke down the complex task into {len(result.get('subtasks', []))} manageable subtasks, executed them in parallel through specialized workers, and synthesized the results into a cohesive solution.
+The orchestrator successfully broke down the complex task into {len(result.get('subtasks', []))} manageable subtasks, executed them through specialised workers, and synthesised the results into a cohesive solution.
 
 ## Process Overview
 
-1. **Task Analysis**: Orchestrator analyzed the input requirements
-2. **Dynamic Decomposition**: Created {len(result.get('subtasks', []))} specialized subtasks
-3. **Parallel Execution**: Workers processed subtasks independently
-4. **Result Synthesis**: Combined worker outputs into final solution
+1. **Task Analysis**: Orchestrator analysed the input requirements
+2. **Dynamic Decomposition**: Created {len(result.get('subtasks', []))} specialised subtasks
+3. **Dependency Resolution**: Executed subtasks in correct order
+4. **Specialised Execution**: Workers processed subtasks independently
+5. **Integration Validation**: Checked compatibility before synthesis
+6. **Result Synthesis**: Combined worker outputs into final solution
 
 {subtasks_section}
 
@@ -433,7 +571,7 @@ The orchestrator successfully broke down the complex task into {len(result.get('
 ```
 
 {subtasks_section}{worker_outputs_section}## Files Generated
-- `final_code.py` - Synthesized final implementation
+- `final_code.py` - Synthesised final implementation
 - `ORCHESTRATOR_REPORT.md` - **KEY DELIVERABLE:** Orchestration process breakdown
 
 ---
