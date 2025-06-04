@@ -129,44 +129,25 @@ python patterns/01_sequential_workflow.py
 
 ---
 
-### [Pattern 2: Conditional Routing](PATTERNS.md#pattern-2-conditional-routing) ❓🛣️📊🎯
+### [Pattern 2: Conditional Routing](PATTERNS.md#pattern-2-conditional-routing) 🧠🛣️🎯📋
 
 - **File**: `patterns/02_conditional_routing.py`
-- **Concept**: Quality gates determine workflow paths
-- **Use case**: Iterative improvement based on evaluation
-- **File**: `patterns/02_conditional_routing.py`
-- **Concept**: Quality gates determine workflow paths
-- **Use case**: Iterative improvement based on evaluation
+- **Concept**: Router analyzes content and routes to appropriate specialist
+- **Use case**: Domain-specific expert selection based on code characteristics
 
 **Run and explore**:
 
 ```bash
 python patterns/02_conditional_routing.py
-# Note iteration count in output
+# Watch router decision in output
 ```
 
 #### **Your 4 Exercises** (modify the code):
 
-1. **Adjust threshold**: Change `quality_threshold = 7` to 9. How many iterations now? Play around with `max_iterations` too.
-2. **Add fast track**: If initial score ≥ 8, skip refactoring entirely.
-3. **Multi-criteria evaluation**: Score separately for security, performance, readability. Route based on lowest.
-4. **Final code selection**: Update logic so that the final code that is chosen after timeout is the one with the highest `lowest_score` instead of last code generated.
-
-> [!TIP]
-> Exercise 3 requires a single multi_criteria_evaluator_agent to handle separate scores. Exercise 4 requires a finalize_best_code function and node plus **state fields `best_code_index` and `best_lowest_score` to track the highest-scoring code version**. It should log something like this:
->
-> ```bash
-> 📊 Scores - Security: 1, Performance: 7, Readability: 8 (Lowest: 1)
-> 🏆 New best code found! Score: 1/10
-> 📊 Scores - Security: 3, Performance: 3, Readability: 8 (Lowest: 3)
-> 🏆 New best code found! Score: 3/10
-> 📊 Scores - Security: 3, Performance: 3, Readability: 8 (Lowest: 3)
-> 📊 Scores - Security: 2, Performance: 8, Readability: 8 (Lowest: 2)
-> Max iterations reached. Best score achieved: 3/10
-> 🎯 Selected best code from iteration 2 (score: 3/10) instead of final iteration
-> 🎯 Selected best code from iteration 2 (score: 3/10) instead of final iteration
-> ✅ Conditional routing codebase created in: generated/02_conditional_routing_20250602_182427/
-> ```
+1. **Add more experts**: Create `database_expert_agent` and update router logic to route SQL/schema code.
+2. **Smart routing**: Make router consider task description as well as code content for routing decisions.
+3. **Route confidence**: Add confidence scoring - if router is uncertain, route to general expert.
+4. **Multi-expert routing**: Allow router to send code to multiple experts when it contains mixed concerns.
 
 ---
 
@@ -240,10 +221,26 @@ python patterns/05_evaluator_optimiser.py
 
 #### **Your 4 Exercises** (modify the code):
 
-1. **Track metrics**: Add complexity score using `radon` library. Optimise for both quality and simplicity.
-2. **Targeted optimisation**: If feedback mentions "performance", use performance-specific optimiser.
-3. **Detect plateau**: If score doesn't improve for 2 iterations, stop early.
-4. **History tracking**: Store all iterations in state, generate comparison chart.
+1. **Adjust threshold**: Change `quality_threshold = 7` to 9. How many iterations now? Play around with `max_iterations` too.
+2. **Add fast track**: If initial score ≥ 8, skip refactoring entirely.
+3. **Multi-criteria evaluation**: Score separately for security, performance, readability. Route based on lowest.
+4. **Final code selection**: Update logic so that the final code that is chosen after timeout is the one with the highest `lowest_score` instead of last code generated.
+
+> [!TIP]
+> Exercise 3 requires a single multi_criteria_evaluator_agent to handle separate scores. Exercise 4 requires a finalize_best_code function and node plus **state fields `best_code_index` and `best_lowest_score` to track the highest-scoring code version**. It should log something like this:
+>
+> ```bash
+> 📊 Scores - Security: 1, Performance: 7, Readability: 8 (Lowest: 1)
+> 🏆 New best code found! Score: 1/10
+> 📊 Scores - Security: 3, Performance: 3, Readability: 8 (Lowest: 3)
+> 🏆 New best code found! Score: 3/10
+> 📊 Scores - Security: 3, Performance: 3, Readability: 8 (Lowest: 3)
+> 📊 Scores - Security: 2, Performance: 8, Readability: 8 (Lowest: 2)
+> Max iterations reached. Best score achieved: 3/10
+> 🎯 Selected best code from iteration 2 (score: 3/10) instead of final iteration
+> 🎯 Selected best code from iteration 2 (score: 3/10) instead of final iteration
+> ✅ Conditional routing codebase created in: generated/02_conditional_routing_20250602_182427/
+> ```
 
 ---
 

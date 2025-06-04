@@ -68,39 +68,45 @@ builder.add_edge("refactorer", END)
 
 ## Pattern 2: Conditional Routing
 
-- **When to use**: Need different paths based on quality/conditions
+- **When to use**: Different code types need different expert analysis
 - **Workflow**: [Routing](https://www.anthropic.com/engineering/building-effective-agents#workflow-routing)
 - **File**: `02_conditional_routing.py`
-- **Description**: Quality-based routing with improvement loops
-- **Best for**: Quality-dependent workflows
+- **Description**: Content-based routing to specialist agents
+- **Best for**: Domain-specific expert selection
 - **Complexity**: Medium
-- **Execution**: Variable
-- **Use cases**: Content moderation, Quality assurance, Iterative improvement
+- **Execution**: Fast (single path)
+- **Use cases**: Expert systems, Domain-specific analysis, Intelligent routing
 
 ```mermaid
 graph LR
     START --> Coder
-    Coder --> Reviewer
-    Reviewer --> Evaluator
-    Evaluator --> QualityGate{Score >= 7?}
-    QualityGate -->|Yes| END
-    QualityGate -->|No| Refactorer
-    Refactorer --> Reviewer
+    Coder --> Router
+    Router --> RouteDecision{Content Type?}
+    RouteDecision -->|Security| SecurityExpert
+    RouteDecision -->|Performance| PerformanceExpert
+    RouteDecision -->|General| GeneralExpert
+    SecurityExpert --> Synthesis
+    PerformanceExpert --> Synthesis
+    GeneralExpert --> Synthesis
+    Synthesis --> END
 ```
 
 ```python
 # Key structure
-def quality_gate(state):
-    return "done" if state["score"] >= 7 else "improve"
+def route_to_specialist(state):
+    route = state["route_decision"]
+    return f"{route}_expert"
 
-builder.add_conditional_edges("evaluator", quality_gate,
-    {"improve": "refactorer", "done": END})
+builder.add_conditional_edges("router", route_to_specialist,
+    {"security_expert": "security_expert",
+     "performance_expert": "performance_expert",
+     "general_expert": "general_expert"})
 ```
 
-**Real example**: Keep improving code until quality score ≥ 7 <br /> <br />
+**Real example**: Router analyzes code → Routes authentication code to security expert → Expert provides domain analysis
 
-**Pros**: Ensures quality standards, adaptive flow <br />
-**Cons**: Can loop indefinitely without max iterations <br />
+**Pros**: Efficient expert utilization, intelligent content-based routing
+**Cons**: Limited to predefined expert domains, single expert per execution
 
 ## Pattern 3: Parallel Processing
 
