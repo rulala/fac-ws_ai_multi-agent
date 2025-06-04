@@ -341,49 +341,60 @@ class EvaluatorCodebase(CodebaseGenerator):
     def generate(self, result: Dict[str, Any]) -> None:
         self.create_folder()
 
+        # Write final code
         self.write_python_file("final_code", result.get(
             'final_code', result.get('code', '')))
 
-        current_eval = result.get('current_evaluation', {})
-        final_score = current_eval.get('quality_score', 'N/A')
-        complexity_score = current_eval.get('complexity_score', 'N/A')
-        final_feedback = current_eval.get('feedback', 'No feedback available')
+        final_score = result.get('quality_score', 'N/A')
         iteration_count = result.get('iteration_count', 0)
-        plateau_count = result.get('plateau_count', 0)
+        code_list = result.get('code', [])
+        quality_scores = result.get('quality_scores', [])
 
-        complexity_section = ""
-        if complexity_score != 'N/A':
-            complexity_section = f"""
-- **Complexity Score:** {complexity_score}/10 (10 = simple)
-- **Combined Score:** {(final_score + complexity_score) / 2 if isinstance(final_score, int) and isinstance(complexity_score, int) else 'N/A'}/10"""
+        # Write each iteration as separate Python file
+        files_generated = "- `final_code.py` - Iteratively optimised implementation"
+        if isinstance(code_list, list) and len(code_list) > 0:
+            for i, code_version in enumerate(code_list):
+                if i == 0:
+                    filename = "initial_code"
+                    files_generated += f"\n- `initial_code.py` - Original implementation"
+                else:
+                    filename = f"iteration_{i}"
+                    files_generated += f"\n- `iteration_{i}.py` - Iteration {i} improvement"
 
-        optimisation_features = ""
-        optimization_methods = []
-        if result.get('performance_focused'):
-            optimization_methods.append("Performance-targeted optimisation")
-        if plateau_count > 0:
-            optimization_methods.append("Plateau detection enabled")
-        if result.get('history'):
-            optimization_methods.append("Progress chart generation")
+                self.write_python_file(filename, code_version)
 
-        if optimization_methods:
-            optimisation_features = f"""
+        # Determine completion reason
+        completion_reason = "Quality threshold reached"
+        if iteration_count >= 3:
+            completion_reason = "Max iterations reached"
+        elif final_score >= 7:
+            completion_reason = "Quality threshold reached"
+        else:
+            completion_reason = "Optimization complete"
 
-## Advanced Optimisation Features
-{chr(10).join(f"- {method}" for method in optimization_methods)}"""
+        # Build iterations section
+        iterations_section = ""
+        if isinstance(code_list, list) and len(code_list) > 1:
+            iterations_section = "\n## Code Evolution\n\n"
+            for i, code_version in enumerate(code_list):
+                iteration_label = "Initial Code" if i == 0 else f"Iteration {i}"
+                score_info = ""
+                if i < len(quality_scores):
+                    score_info = f" (Score: {quality_scores[i]}/10)"
 
-        history_section = f"""## Optimisation Summary
-- **Total Iterations:** {iteration_count}
-- **Final Quality Score:** {final_score}/10{complexity_section}
-- **Plateau Count:** {plateau_count}
-- **Final Feedback:** {final_feedback}
-- **Completion Reason:** {'Quality threshold reached' if isinstance(final_score, int) and final_score >= 8 else 'Plateau detected' if plateau_count >= 2 else 'Max iterations reached' if iteration_count >= 3 else 'Evaluator determined completion'}
+                iterations_section += f"""### {iteration_label}{score_info}
+```python
+{extract_code_from_response(code_version)}
+```
 
 """
 
-        chart_note = ""
-        if result.get('history') and len(result['history']) > 1:
-            chart_note = "\n📊 **Progress chart saved as `optimisation_progress.png`**"
+        history_section = f"""## Optimisation Summary
+- **Total Iterations:** {iteration_count}
+- **Final Quality Score:** {final_score}/10
+- **Completion Reason:** {completion_reason}
+
+"""
 
         audit_content = f"""# Evaluator-Optimiser Audit Trail
 
@@ -398,10 +409,8 @@ class EvaluatorCodebase(CodebaseGenerator):
 {extract_code_from_response(result.get('final_code', result.get('code', 'No code generated')))}
 ```
 
-{history_section}{optimisation_features}
-
-## Files Generated
-- `final_code.py` - Iteratively optimised implementation{chart_note}
+{history_section}{iterations_section}## Files Generated
+{files_generated}
 
 ---
 *Generated using LangGraph Evaluator-Optimiser Pattern*
