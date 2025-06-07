@@ -46,7 +46,7 @@ This workshop teaches LangGraph through architectural patterns, not code syntax.
    - **with pip only** (easier for Windows):
 
    ```bash
-   pip install langchain-openai langgraph python-dotenv radon matplotlib
+   pip install langchain-openai langgraph python-dotenv matplotlib
    ```
 
 3. **Create `.env` file**:
@@ -293,7 +293,7 @@ python patterns/06_orchestrator_worker.py
 - [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
 - [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents/)
 - [LangGraph Workflows](https://langchain-ai.github.io/langgraph/tutorials/workflows/)
-- [LangGraph Agent Superviser](https://langchain-ai.github.io/langgraph/tutorials/multi_agent/agent_supervisor/)
+- [LangGraph Agent Supervisor](https://langchain-ai.github.io/langgraph/tutorials/multi_agent/agent_supervisor/)
 
 ---
 
