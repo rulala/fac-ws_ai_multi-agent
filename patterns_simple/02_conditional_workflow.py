@@ -9,7 +9,8 @@ load_dotenv()
 class State(TypedDict):
     input: str
     code: str
-    score: int
+    route: str
+    analysis: str
 
 
 llm = ChatOpenAI(model="gpt-4.1-nano")
@@ -20,37 +21,57 @@ def coder(state: State) -> State:
     return {"code": response.content}
 
 
-def evaluator(state: State) -> State:
-    response = llm.invoke(f"Rate this code 1-10:\n{state['code']}\nRespond with just the number.")
-    try:
-        score = int(response.content.strip())
-    except:
-        score = 5
-    return {"score": score}
+def router(state: State) -> State:
+    response = llm.invoke(
+        f"Analyze this code. Respond with 'security', 'performance', or 'general':\n{state['code']}")
+    route = response.content.strip().lower()
+    if route not in ["security", "performance", "general"]:
+        route = "general"
+    return {"route": route}
 
 
-def improver(state: State) -> State:
-    response = llm.invoke(f"Improve this code:\n{state['code']}")
-    return {"code": response.content}
+def security_expert(state: State) -> State:
+    response = llm.invoke(f"Security analysis:\n{state['code']}")
+    return {"analysis": response.content}
 
 
-def quality_gate(state: State) -> Literal["improve", "done"]:
-    return "done" if state["score"] >= 7 else "improve"
+def performance_expert(state: State) -> State:
+    response = llm.invoke(f"Performance analysis:\n{state['code']}")
+    return {"analysis": response.content}
+
+
+def general_expert(state: State) -> State:
+    response = llm.invoke(f"General analysis:\n{state['code']}")
+    return {"analysis": response.content}
+
+
+def route_to_expert(state: State) -> Literal["security_expert", "performance_expert", "general_expert"]:
+    route = state.get("route", "general")
+    return f"{route}_expert"
 
 
 builder = StateGraph(State)
 builder.add_node("coder", coder)
-builder.add_node("evaluator", evaluator)
-builder.add_node("improver", improver)
+builder.add_node("router", router)
+builder.add_node("security_expert", security_expert)
+builder.add_node("performance_expert", performance_expert)
+builder.add_node("general_expert", general_expert)
 
 builder.add_edge(START, "coder")
-builder.add_edge("coder", "evaluator")
-builder.add_conditional_edges("evaluator", quality_gate, {"improve": "improver", "done": END})
-builder.add_edge("improver", "evaluator")
+builder.add_edge("coder", "router")
+builder.add_conditional_edges("router", route_to_expert, {
+    "security_expert": "security_expert",
+    "performance_expert": "performance_expert",
+    "general_expert": "general_expert"
+})
+builder.add_edge("security_expert", END)
+builder.add_edge("performance_expert", END)
+builder.add_edge("general_expert", END)
 
 workflow = builder.compile()
 
 if __name__ == "__main__":
-    result = workflow.invoke({"input": "file upload function"})
-    print(f"FINAL CODE (Score: {result['score']}):")
-    print(result["code"])
+    result = workflow.invoke({"input": "user authentication system"})
+    print("CODE:", result["code"])
+    print("ROUTED TO:", result["route"])
+    print("ANALYSIS:", result["analysis"])
