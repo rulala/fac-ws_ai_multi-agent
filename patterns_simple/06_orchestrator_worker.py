@@ -1,7 +1,8 @@
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import Send
-from typing import TypedDict, List
+from typing import TypedDict, List, Annotated
+import operator
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,13 +11,12 @@ load_dotenv()
 class State(TypedDict):
     input: str
     subtasks: List[str]
-    worker_outputs: List[str]
+    worker_outputs: Annotated[List[str], operator.add]
     final_result: str
 
 
 class WorkerState(TypedDict):
     task: str
-    output: str
 
 
 llm = ChatOpenAI(model="gpt-4.1-nano")
@@ -40,7 +40,7 @@ def create_workers(state: State):
 def worker(state: WorkerState) -> WorkerState:
     response = llm.invoke(f"Complete this coding subtask: {state['task']}")
     print(f"Worker completed: {state['task'][:30]}...")
-    return {"output": response.content}
+    return {"worker_outputs": [response.content]}
 
 
 def collect_results(state: State) -> State:
