@@ -1,24 +1,23 @@
+from __future__ import annotations
+
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START, END
-from typing import TypedDict, Literal
+from typing import TypedDict, List
 from dotenv import load_dotenv
 from utils import ConditionalCodebase
+import json
 
 load_dotenv()
 
 
-class CodeReviewState(TypedDict):
+class CodeAnalysisState(TypedDict):
     input: str
-    code: list
-    review: str
-    security_score: int
-    performance_score: int
-    readability_score: int
-    lowest_score: int
-    iteration_count: int
-    best_code_index: int
-    best_lowest_score: int
+    code: str
+    route_decisions: List[str]
+    confidence: float
+    specialist_analysis: str
+    final_report: str
 
 
 llm = ChatOpenAI(model="gpt-4.1-nano")
@@ -28,160 +27,131 @@ coder_prompt = ChatPromptTemplate.from_messages([
     ("human", "{input}")
 ])
 
-reviewer_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Code Reviewer. Provide feedback on code quality and best practices. In your review, comment on security, performance, and readability."),
-    ("human", "Review this code:\n{code}")
+router_prompt = ChatPromptTemplate.from_messages([
+    (
+        "system",
+        "You are a Router. Analyse the task description and code snippet.\n"
+        "Decide which experts should analyse it: security, performance, database, general.\n"
+        "Return a JSON object with keys 'routes' (list) and 'confidence' (0-1).\n"
+        "If unsure, include 'general' and lower the confidence."
+    ),
+    ("human", "Task: {input}\n\nCode:\n{code}")
 ])
 
-security_evaluator_prompt = ChatPromptTemplate.from_messages([
-    ("system", "Rate this code's SECURITY from 1-10. Consider input validation, injection risks, authentication. Respond with just the number."),
-    ("human", "Code:\n{code}")
+security_expert_prompt = ChatPromptTemplate.from_messages([
+    (
+        "system",
+        "You are a Security Expert. Focus on vulnerabilities, authentication,"
+        " authorization and secure coding practices."
+    ),
+    ("human", "Provide security analysis for:\n{code}")
 ])
 
-performance_evaluator_prompt = ChatPromptTemplate.from_messages([
-    ("system", "Rate this code's PERFORMANCE from 1-10. Consider algorithmic complexity, efficiency, resource usage. Respond with just the number."),
-    ("human", "Code:\n{code}")
+performance_expert_prompt = ChatPromptTemplate.from_messages([
+    (
+        "system",
+        "You are a Performance Expert. Focus on algorithmic complexity,"
+        " optimisation and resource usage."
+    ),
+    ("human", "Provide performance analysis for:\n{code}")
 ])
 
-readability_evaluator_prompt = ChatPromptTemplate.from_messages([
-    ("system", "Rate this code's READABILITY from 1-10. Consider naming, structure, documentation, clarity. Respond with just the number."),
-    ("human", "Code:\n{code}")
+database_expert_prompt = ChatPromptTemplate.from_messages([
+    (
+        "system",
+        "You are a Database Expert. Focus on SQL injections, schema design,"
+        " and query optimisation."
+    ),
+    ("human", "Provide database analysis for:\n{code}")
 ])
 
-refactorer_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Refactoring Expert. Improve the code based on review feedback, focusing on the weakest area."),
-    ("human",
-     "Code:\n{code}\n\nFeedback:\n{review}\n\nScores - Security: {security}, Performance: {performance}, Readability: {readability}\n\nRefactor to address the lowest scoring area:")
+general_expert_prompt = ChatPromptTemplate.from_messages([
+    (
+        "system",
+        "You are a General Code Expert. Focus on maintainability and best practices."
+    ),
+    ("human", "Provide general code analysis for:\n{code}")
+])
+
+synthesis_prompt = ChatPromptTemplate.from_messages([
+    (
+        "system",
+        "You are a Technical Lead. Synthesise specialist feedback into final recommendations."
+    ),
+    (
+        "human",
+        "Specialist Analysis:\n{specialist_analysis}\n\nProvide final recommendations:"
+    )
 ])
 
 
-def coder_agent(state: CodeReviewState) -> CodeReviewState:
+def coder_agent(state: CodeAnalysisState) -> CodeAnalysisState:
     response = llm.invoke(coder_prompt.format_messages(input=state["input"]))
-    return {"code": [response.content], "iteration_count": state.get("iteration_count", 0)}
+    return {"code": response.content}
 
 
-def reviewer_agent(state: CodeReviewState) -> CodeReviewState:
-    current_code = state["code"][-1] if state["code"] else ""
-    response = llm.invoke(reviewer_prompt.format_messages(code=current_code))
-    return {"review": response.content}
-
-
-def multi_criteria_evaluator_agent(state: CodeReviewState) -> CodeReviewState:
-    current_code = state["code"][-1] if state["code"] else ""
-
-    security_response = llm.invoke(
-        security_evaluator_prompt.format_messages(code=current_code))
-    performance_response = llm.invoke(
-        performance_evaluator_prompt.format_messages(code=current_code))
-    readability_response = llm.invoke(
-        readability_evaluator_prompt.format_messages(code=current_code))
+def router_agent(state: CodeAnalysisState) -> CodeAnalysisState:
+    response = llm.invoke(
+        router_prompt.format_messages(input=state["input"], code=state["code"])
+    )
 
     try:
-        security_score = int(security_response.content.strip())
-    except:
-        security_score = 5
+        data = json.loads(response.content)
+        routes = [r.lower() for r in data.get("routes", [])]
+        confidence = float(data.get("confidence", 0.5))
+    except Exception:
+        routes = [response.content.strip().lower()]
+        confidence = 0.5
 
-    try:
-        performance_score = int(performance_response.content.strip())
-    except:
-        performance_score = 5
+    if not routes:
+        routes = ["general"]
+    if confidence < 0.6 and "general" not in routes:
+        routes.append("general")
 
-    try:
-        readability_score = int(readability_response.content.strip())
-    except:
-        readability_score = 5
-
-    lowest_score = min(security_score, performance_score, readability_score)
-    current_code_index = len(state["code"]) - 1
-
-    print(
-        f"📊 Scores - Security: {security_score}, Performance: {performance_score}, Readability: {readability_score} (Lowest: {lowest_score})")
-
-    best_code_index = state.get("best_code_index", 0)
-    best_lowest_score = state.get("best_lowest_score", 0)
-    if lowest_score > best_lowest_score:
-        best_code_index = current_code_index
-        best_lowest_score = lowest_score
-        print(
-            f"🏆 New best code found! Score: {lowest_score}/10")
-
-    return {
-        "security_score": security_score,
-        "performance_score": performance_score,
-        "readability_score": readability_score,
-        "lowest_score": lowest_score,
-        "best_code_index": best_code_index,
-        "best_lowest_score": best_lowest_score
-    }
+    print(f"🎯 Router decisions: {routes} (confidence {confidence:.2f})")
+    return {"route_decisions": routes, "confidence": confidence}
 
 
-def refactorer_agent(state: CodeReviewState) -> CodeReviewState:
-    current_code = state["code"][-1] if state["code"] else ""
-    response = llm.invoke(refactorer_prompt.format_messages(
-        code=current_code,
-        review=state["review"],
-        security=state["security_score"],
-        performance=state["performance_score"],
-        readability=state["readability_score"]
-    ))
-    updated_code_list = state["code"] + [response.content]
-    return {
-        "code": updated_code_list,
-        "iteration_count": state["iteration_count"] + 1
-    }
+def specialists_agent(state: CodeAnalysisState) -> CodeAnalysisState:
+    analyses = []
+    for route in state.get("route_decisions", []):
+        if route == "security":
+            resp = llm.invoke(security_expert_prompt.format_messages(code=state["code"]))
+            analyses.append(f"### Security Expert\n{resp.content}")
+        elif route == "performance":
+            resp = llm.invoke(performance_expert_prompt.format_messages(code=state["code"]))
+            analyses.append(f"### Performance Expert\n{resp.content}")
+        elif route == "database":
+            resp = llm.invoke(database_expert_prompt.format_messages(code=state["code"]))
+            analyses.append(f"### Database Expert\n{resp.content}")
+        else:
+            resp = llm.invoke(general_expert_prompt.format_messages(code=state["code"]))
+            analyses.append(f"### General Expert\n{resp.content}")
+    combined = "\n\n".join(analyses)
+    print("🔍 Specialists completed analysis")
+    return {"specialist_analysis": combined}
 
 
-def finalise_best_code(state: CodeReviewState) -> CodeReviewState:
-    best_index = state.get("best_code_index", len(state["code"]) - 1)
-    best_code = state["code"][best_index]
-
-    # Replace the code list with just the best version for output
-    final_code_list = [best_code]
-
-    if best_index != len(state["code"]) - 1:
-        print(
-            f"🎯 Selected best code from iteration {best_index + 1} (score: {state['best_lowest_score']}/10) instead of final iteration")
-
-    return {"code": final_code_list}
+def synthesis_agent(state: CodeAnalysisState) -> CodeAnalysisState:
+    response = llm.invoke(
+        synthesis_prompt.format_messages(specialist_analysis=state["specialist_analysis"])
+    )
+    routes = ", ".join(state.get("route_decisions", []))
+    print(f"🎯 Synthesis complete - routed via {routes}")
+    return {"final_report": response.content}
 
 
-def quality_gate(state: CodeReviewState) -> Literal["refactor", "complete"]:
-    quality_threshold = 7
-    fast_track_threshold = 9
-    max_iterations = 3
-
-    if state["lowest_score"] >= fast_track_threshold and state["iteration_count"] == 0:
-        print(
-            f"🚀 Fast track activated! All scores ≥ {fast_track_threshold} - skipping refactoring entirely")
-        return "complete"
-    elif state["lowest_score"] >= quality_threshold:
-        print(
-            f"✅ All criteria passed! Lowest score: {state['lowest_score']}/10")
-        return "complete"
-    elif state["iteration_count"] >= max_iterations:
-        print(f"Max iterations reached. Lowest score: {state['lowest_score']}")
-        return "complete"
-    else:
-        return "refactor"
-
-
-builder = StateGraph(CodeReviewState)
+builder = StateGraph(CodeAnalysisState)
 builder.add_node("coder", coder_agent)
-builder.add_node("reviewer", reviewer_agent)
-builder.add_node("multi_criteria_evaluator", multi_criteria_evaluator_agent)
-builder.add_node("refactorer", refactorer_agent)
-builder.add_node("finalise_best_code", finalise_best_code)
+builder.add_node("router", router_agent)
+builder.add_node("specialists", specialists_agent)
+builder.add_node("synthesis", synthesis_agent)
 
 builder.add_edge(START, "coder")
-builder.add_edge("coder", "reviewer")
-builder.add_edge("reviewer", "multi_criteria_evaluator")
-builder.add_conditional_edges(
-    "multi_criteria_evaluator",
-    quality_gate,
-    {"refactor": "refactorer", "complete": "finalise_best_code"}
-)
-builder.add_edge("refactorer", "reviewer")
-builder.add_edge("finalise_best_code", END)
+builder.add_edge("coder", "router")
+builder.add_edge("router", "specialists")
+builder.add_edge("specialists", "synthesis")
+builder.add_edge("synthesis", END)
 
 workflow = builder.compile()
 
@@ -195,3 +165,4 @@ if __name__ == "__main__":
     codebase.generate(result)
 
     print("=== WORKFLOW COMPLETED ===")
+
