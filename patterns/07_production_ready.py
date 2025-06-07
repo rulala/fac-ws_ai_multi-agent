@@ -143,7 +143,7 @@ if __name__ == "__main__":
     print("=== PRODUCTION PIPELINE ===")
     result = workflow.invoke({"input": task})
 
-    codebase = ProductionCodebase("06_production_ready", task)
+    codebase = ProductionCodebase("07_production_ready", task)
     codebase.generate(result)
 
     print("=== WORKFLOW COMPLETED ===")
