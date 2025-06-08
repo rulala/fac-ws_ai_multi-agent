@@ -1,6 +1,7 @@
 import os
 import re
 import datetime
+import shutil
 from typing import Dict, Any, Optional
 
 
@@ -22,6 +23,14 @@ def find_test_key(result: Dict[str, Any]) -> Optional[str]:
     """Return the first key containing 'test' if present."""
     for key in result:
         if 'test' in key.lower():
+            return key
+    return None
+
+
+def find_compliance_key(result: Dict[str, Any]) -> Optional[str]:
+    """Return the first key containing 'compliance' if present."""
+    for key in result:
+        if 'compliance' in key.lower():
             return key
     return None
 
@@ -578,6 +587,18 @@ class ProductionCodebase(CodebaseGenerator):
 
 """
 
+        compliance_section = ""
+        compliance_key = find_compliance_key(result)
+        if compliance_key and result.get(compliance_key):
+            compliance_section = f"""## Compliance Report
+{result[compliance_key]}"""
+
+        if result.get('workflow_log') and os.path.exists(result['workflow_log']):
+            shutil.copy(result['workflow_log'], os.path.join(self.folder_name, 'workflow.log'))
+            log_line = "\n- `workflow.log` - Execution trace"
+        else:
+            log_line = ""
+
         audit_content = f"""# Production Ready Audit Trail
 
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
@@ -591,11 +612,13 @@ class ProductionCodebase(CodebaseGenerator):
 
 {metrics_section}
 
+{compliance_section}
+
 ## Review Feedback
 {result.get('review', 'No review available')}
 
 {error_section}## Files Generated
-- `production_code.py` - Production-ready implementation
+- `production_code.py` - Production-ready implementation{log_line}
 
 ---
 *Generated using LangGraph Production Ready Pattern*
