@@ -1,7 +1,7 @@
 import os
 import re
 import datetime
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 
 def extract_code_from_response(response_text: str) -> str:
@@ -16,6 +16,14 @@ def extract_code_from_response(response_text: str) -> str:
 def sanitise_filename(text: str) -> str:
     sanitised = re.sub(r'[^\w\s-]', '', text).strip()
     return re.sub(r'[-\s]+', '_', sanitised).lower()
+
+
+def find_test_key(result: Dict[str, Any]) -> Optional[str]:
+    """Return the first key containing 'test' if present."""
+    for key in result:
+        if 'test' in key.lower():
+            return key
+    return None
 
 
 class CodebaseGenerator:
@@ -50,20 +58,21 @@ class SequentialCodebase(CodebaseGenerator):
         self.write_python_file(
             "refactored_code", result.get('refactored_code', ''))
 
-        if result.get('unit_tests'):
-            self.write_python_file("unit_tests", result.get('unit_tests', ''))
+        tests_key = find_test_key(result)
+        if tests_key and result.get(tests_key):
+            self.write_python_file("unit_tests", result.get(tests_key, ""))
 
         unit_tests_section = ""
-        if result.get('unit_tests'):
+        if tests_key and result.get(tests_key):
             unit_tests_section = f"""
 
 ## Unit Tests
 ```python
-{extract_code_from_response(result.get('unit_tests', 'No unit tests generated'))}
+{extract_code_from_response(result.get(tests_key, 'No tests generated'))}
 ```"""
 
         files_generated = "- `original_code.py` - Initial implementation\n- `refactored_code.py` - Improved version based on review"
-        if result.get('unit_tests'):
+        if tests_key and result.get(tests_key):
             files_generated += "\n- `unit_tests.py` - Comprehensive test suite"
 
         performance_section = ""
