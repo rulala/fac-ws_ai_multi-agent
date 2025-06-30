@@ -100,7 +100,7 @@ def refactorer_agent(state: CodeReviewState) -> CodeReviewState:
 def tester_agent(state: CodeReviewState) -> CodeReviewState:
     response = llm.invoke(tester_prompt.format_messages(
         refactored_code=state["refactored_code"]))
-    new_state = {"unit_tests": response.content}
+    new_state = {"tests": response.content}
     save_state_to_file({**state, **new_state}, "tester")
     return new_state
 
