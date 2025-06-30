@@ -27,19 +27,11 @@ class TaskBreakdown(BaseModel):
     subtasks: List[SubTask] = Field(description="List of subtasks to complete")
 
 
-class ValidationResult(BaseModel):
-    can_combine: bool = Field(
-        description="Whether outputs can be successfully combined")
-    issues: List[str] = Field(description="List of integration issues found")
-    suggestions: List[str] = Field(description="Suggestions for improvement")
-
-
 class OrchestratorState(TypedDict):
     input: str
     subtasks: List[dict]
     completed_subtasks: List[str]
     worker_outputs: Annotated[List[str], operator.add]
-    validation_result: dict
     final_result: str
 
 
@@ -74,15 +66,10 @@ testing_worker_prompt = ChatPromptTemplate.from_messages([
     ("human", "Testing task: {name}\nDescription: {description}")
 ])
 
-validation_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Technical Validator. Analyse if these code outputs can be integrated successfully. Check for compatibility, missing connections, and integration issues."),
-    ("human", "Validate integration of these outputs:\n{outputs}")
-])
-
 synthesis_prompt = ChatPromptTemplate.from_messages([
     ("system", "You are a Code Synthesiser. Combine validated worker outputs into a cohesive final solution. Address any integration issues noted by the validator."),
     ("human",
-     "Worker outputs:\n{outputs}\n\nValidation results:\n{validation}")
+     "Worker outputs:\n{outputs}")
 ])
 
 
@@ -127,17 +114,27 @@ def create_workers(state: OrchestratorState):
     return [Send("worker", {"subtask": subtask}) for subtask in available_subtasks]
 
 
-def check_workers_needed(state: OrchestratorState) -> Literal["workers", "validation"]:
+def check_workers_needed(state: OrchestratorState) -> Literal["workers", "synthesis"]:
     completed = set(state.get("completed_subtasks", []))
-
+    total_subtasks = len(state.get("subtasks", []))
+    
+    # Check if all subtasks are completed
+    if len(completed) >= total_subtasks:
+        print(f"✅ All {total_subtasks} subtasks completed, proceeding to synthesis")
+        return "synthesis"
+    
+    # Check if there are more workers to run
     for subtask in state["subtasks"]:
         if subtask["name"] not in completed:
             dependencies_met = all(
                 dep in completed for dep in subtask["dependencies"])
             if dependencies_met:
+                print(f"🔄 More workers needed, found available subtask: {subtask['name']}")
                 return "workers"
-
-    return "validation"
+    
+    # No more workers can run, but not all complete - proceed to synthesis with partial results
+    print(f"⚠️ No more workers can run due to dependencies, proceeding to synthesis")
+    return "synthesis"
 
 
 def frontend_worker_agent(state: WorkerState) -> dict:
@@ -217,66 +214,41 @@ def track_completion(state: OrchestratorState) -> OrchestratorState:
     return {"completed_subtasks": completed}
 
 
-def validation_agent(state: OrchestratorState) -> OrchestratorState:
-    worker_outputs = state.get("worker_outputs", [])
-    outputs_text = "\n\n---\n\n".join(worker_outputs)
-
-    structured_llm = llm.with_structured_output(ValidationResult)
-    validation = structured_llm.invoke(
-        validation_prompt.format_messages(outputs=outputs_text))
-
-    validation_dict = {
-        "can_combine": validation.can_combine,
-        "issues": validation.issues,
-        "suggestions": validation.suggestions
-    }
-
-    if validation.can_combine:
-        print("✅ Validation passed - outputs can be integrated")
-    else:
-        print(f"⚠️ Validation issues found: {len(validation.issues)} issues")
-        for issue in validation.issues[:3]:
-            print(f"  - {issue}")
-
-    return {"validation_result": validation_dict}
-
-
 def synthesis_agent(state: OrchestratorState) -> OrchestratorState:
     worker_outputs = state.get("worker_outputs", [])
     outputs_text = "\n\n---\n\n".join(worker_outputs)
-    validation_text = str(state.get("validation_result", {}))
 
     response = llm.invoke(synthesis_prompt.format_messages(
-        outputs=outputs_text,
-        validation=validation_text
+        outputs=outputs_text
     ))
 
     print(f"🔄 Synthesiser integrated {len(worker_outputs)} worker outputs")
     return {"final_result": response.content}
 
 
-def check_completion(state: OrchestratorState) -> bool:
-    completed = len(state.get("completed_subtasks", []))
-    total = len(state.get("subtasks", []))
-    return completed >= total
+def should_continue_workers(state: OrchestratorState) -> Literal["workers", "synthesis"]:
+    """Determine if more workers should be created or if we should proceed to synthesis"""
+    return check_workers_needed(state)
 
 
 builder = StateGraph(OrchestratorState)
 builder.add_node("orchestrator", orchestrator_agent)
 builder.add_node("worker", worker_agent)
 builder.add_node("track_completion", track_completion)
-builder.add_node("validation", validation_agent)
 builder.add_node("synthesis", synthesis_agent)
 
+# Build the workflow graph
 builder.add_edge(START, "orchestrator")
 builder.add_conditional_edges("orchestrator", create_workers, ["worker"])
 builder.add_edge("worker", "track_completion")
-builder.add_conditional_edges("track_completion", check_workers_needed, {
-                              "workers": "create_workers_node", "validation": "validation"})
-builder.add_node("create_workers_node", lambda state: state)
 builder.add_conditional_edges(
-    "create_workers_node", create_workers, ["worker"])
-builder.add_edge("validation", "synthesis")
+    "track_completion", 
+    check_workers_needed, 
+    {
+        "workers": "orchestrator",  # Create more workers
+        "synthesis": "synthesis"    # All done, synthesize
+    }
+)
 builder.add_edge("synthesis", END)
 
 workflow = builder.compile()
@@ -284,10 +256,40 @@ workflow = builder.compile()
 if __name__ == "__main__":
     task = "Create a user authentication system with database, API endpoints, frontend login form, and comprehensive tests"
 
-    print("Starting orchestrator-worker with dependencies...")
+    print("Starting intelligent orchestrator-worker with dependencies...")
     result = workflow.invoke({"input": task})
+    
+    # Display execution summary
+    subtasks = result.get("subtasks", [])
+    completed = result.get("completed_subtasks", [])
+    worker_outputs = result.get("worker_outputs", [])
+    
+    print(f"\n📊 Execution Summary:")
+    print(f"  Subtasks created: {len(subtasks)}")
+    print(f"  Subtasks completed: {len(completed)}")
+    print(f"  Worker outputs: {len(worker_outputs)}")
+    
+    # Show worker types used
+    worker_types = set()
+    for output in worker_outputs:
+        if output.startswith("FRONTEND"):
+            worker_types.add("Frontend")
+        elif output.startswith("BACKEND"):
+            worker_types.add("Backend")
+        elif output.startswith("DATABASE"):
+            worker_types.add("Database")
+        elif output.startswith("TESTING"):
+            worker_types.add("Testing")
+    
+    if worker_types:
+        print(f"  Specialized workers used: {', '.join(sorted(worker_types))}")
+    
+    # Show dependency handling
+    deps_used = any(subtask.get("dependencies") for subtask in subtasks)
+    if deps_used:
+        print(f"  🔗 Dependency-aware execution completed")
 
     codebase = OrchestratorCodebase("06_orchestrator_worker", task)
     codebase.generate(result)
 
-    print("=== WORKFLOW COMPLETED ===")
+    print("=== INTELLIGENT ORCHESTRATOR WORKFLOW COMPLETED ===")
