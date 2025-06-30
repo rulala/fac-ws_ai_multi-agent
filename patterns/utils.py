@@ -131,12 +131,6 @@ class SequentialCodebase(CodebaseGenerator):
         if result.get('tests'):
             files_generated += "\n- `tests.py` - Comprehensive test suite"
 
-        performance_section = ""
-        if 'performance_metrics' in str(result):
-            performance_section = f"""
-
-## Performance Metrics
-Execution timing analysis available in debug output."""
 
         audit_content = f"""# Sequential Workflow Audit Trail
 
@@ -155,7 +149,7 @@ Execution timing analysis available in debug output."""
 ## Refactored Code
 ```python
 {extract_code_from_response(result.get('refactored_code', 'No refactored code available'))}
-```{tests_section}{performance_section}
+```{tests_section}
 
 ## Files Generated
 {files_generated}
@@ -232,23 +226,11 @@ class ParallelCodebase(CodebaseGenerator):
 
         self.write_python_file("main_code", result.get('code', ''))
 
-        performance_comparison = ""
-        if result.get('sequential_time') and result.get('parallel_time'):
-            seq_time = result['sequential_time']
-            par_time = result['parallel_time']
-            speedup = seq_time / par_time if par_time > 0 else 0
-            performance_comparison = f"""
-
-## Performance Analysis
-- **Sequential execution:** {seq_time:.2f}s
-- **Parallel execution:** {par_time:.2f}s  
-- **Speedup achieved:** {speedup:.2f}x"""
-
         synthesis_content = f"""# Code Analysis Synthesis Report
 
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
 **Task:** {self.task}  
-**Analysis Method:** Parallel Expert Review{performance_comparison}
+**Analysis Method:** Parallel Expert Review
 
 ## Executive Summary
 
@@ -266,12 +248,6 @@ class ParallelCodebase(CodebaseGenerator):
 ### Documentation Analysis
 {result.get('documentation_analysis', 'No documentation analysis available')}"""
 
-        error_handling_section = ""
-        if any("failed" in str(result.get(key, "")) for key in ['security_analysis', 'performance_analysis', 'style_analysis', 'documentation_analysis']):
-            error_handling_section = f"""
-
-## Error Handling
-Some agents encountered errors during execution but the workflow continued gracefully."""
 
         audit_content = f"""# Parallel Processing Audit Trail
 
@@ -293,7 +269,7 @@ Some agents encountered errors during execution but the workflow continued grace
 {result.get('performance_analysis', 'No performance analysis available')}
 
 ### Style Analysis
-{result.get('style_analysis', 'No style analysis available')}{documentation_section}{error_handling_section}
+{result.get('style_analysis', 'No style analysis available')}{documentation_section}
 
 ## Files Generated
 - `main_code.py` - Analysed implementation
@@ -429,13 +405,7 @@ class EvaluatorCodebase(CodebaseGenerator):
                 self.write_python_file(filename, code_version)
 
         # Determine completion reason
-        completion_reason = "Quality threshold reached"
-        if iteration_count >= 3:
-            completion_reason = "Max iterations reached"
-        elif final_score >= 7:
-            completion_reason = "Quality threshold reached"
-        else:
-            completion_reason = "Optimization complete"
+        completion_reason = "Max iterations reached" if iteration_count >= 3 else "Quality threshold reached"
 
         # Build iterations section
         iterations_section = ""
@@ -538,15 +508,6 @@ class OrchestratorCodebase(CodebaseGenerator):
 ## Dependency Management
 **Dependency-aware execution:** Subtasks executed in correct order based on dependencies"""
 
-        validation_section = ""
-        if result.get('validation_result'):
-            validation = result['validation_result']
-            validation_section = f"""
-
-## Integration Validation
-- **Can combine:** {validation.get('can_combine', 'Unknown')}
-- **Issues found:** {len(validation.get('issues', []))}
-- **Suggestions:** {len(validation.get('suggestions', []))}"""
 
         worker_outputs_section = ""
         if result.get('worker_outputs'):
@@ -563,7 +524,7 @@ class OrchestratorCodebase(CodebaseGenerator):
 
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
 **Task:** {self.task}  
-**Analysis Method:** Dynamic Task Decomposition{worker_specialisation_section}{dependency_handling_section}{validation_section}
+**Analysis Method:** Dynamic Task Decomposition{worker_specialisation_section}{dependency_handling_section}
 
 ## Executive Summary
 
@@ -575,8 +536,7 @@ The orchestrator successfully broke down the complex task into {len(result.get('
 2. **Dynamic Decomposition**: Created {len(result.get('subtasks', []))} specialised subtasks
 3. **Dependency Resolution**: Executed subtasks in correct order
 4. **Specialised Execution**: Workers processed subtasks independently
-5. **Integration Validation**: Checked compatibility before synthesis
-6. **Result Synthesis**: Combined worker outputs into final solution
+5. **Result Synthesis**: Combined worker outputs into final solution
 
 {subtasks_section}
 
@@ -625,14 +585,6 @@ class ProductionCodebase(CodebaseGenerator):
 - **Human Approval Required:** {result.get('human_approval_needed', False)}
 """
 
-        error_section = ""
-        if result.get('error_log'):
-            error_section = f"""## Error Log
-```
-{result['error_log']}
-```
-
-"""
 
         audit_content = f"""# Production Ready Audit Trail
 
@@ -650,7 +602,7 @@ class ProductionCodebase(CodebaseGenerator):
 ## Review Feedback
 {result.get('review', 'No review available')}
 
-{error_section}## Files Generated
+## Files Generated
 - `production_code.py` - Production-ready implementation
 
 ---
