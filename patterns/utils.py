@@ -131,7 +131,6 @@ class SequentialCodebase(CodebaseGenerator):
         if result.get('tests'):
             files_generated += "\n- `tests.py` - Comprehensive test suite"
 
-
         audit_content = f"""# Sequential Workflow Audit Trail
 
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
@@ -166,21 +165,85 @@ class ConditionalCodebase(CodebaseGenerator):
         self.create_folder()
         self.write_python_file("generated_code", result.get('code', ''))
 
+        # Exercise 1: Database expert detection
         route_decision = result.get("route_decision", "unknown")
+        route_decisions = result.get("route_decisions", [route_decision])
         specialist_analysis = result.get("specialist_analysis", "")
         final_report = result.get("final_report", "")
 
-        specialist_section = ""
-        if specialist_analysis:
+        # Exercise 2: Smart routing - check if task description was used
+        smart_routing_used = "input" in str(result.get("router_debug", "")) or len(route_decisions) > 1
+
+        # Exercise 3: Multi-expert routing detection
+        multiple_experts = len(route_decisions) > 1
+        experts_consulted = []
+        
+        # Collect all expert analyses
+        expert_analyses = []
+        if result.get("security_analysis"):
+            experts_consulted.append("Security")
+            expert_analyses.append(f"### Security Expert Analysis\n{result['security_analysis']}")
+        if result.get("performance_analysis"):
+            experts_consulted.append("Performance") 
+            expert_analyses.append(f"### Performance Expert Analysis\n{result['performance_analysis']}")
+        if result.get("database_analysis"):
+            experts_consulted.append("Database")
+            expert_analyses.append(f"### Database Expert Analysis\n{result['database_analysis']}")
+        if result.get("general_analysis"):
+            experts_consulted.append("General")
+            expert_analyses.append(f"### General Expert Analysis\n{result['general_analysis']}")
+
+        # Build specialist section with enhanced information
+        if multiple_experts and expert_analyses:
+            specialist_section = f"""
+## Multi-Expert Analysis
+**Experts Consulted:** {', '.join(experts_consulted)}
+
+{chr(10).join(expert_analyses)}"""
+        elif specialist_analysis:
             specialist_section = f"""
 ## Specialist Analysis ({route_decision.title()} Expert)
 {specialist_analysis}"""
+        else:
+            specialist_section = ""
 
         recommendations_section = ""
         if final_report:
             recommendations_section = f"""
 ## Final Recommendations
 {final_report}"""
+
+        # Exercise enhancements section
+        enhancements_section = ""
+        if multiple_experts or smart_routing_used or result.get("database_analysis"):
+            enhancements_section = f"""
+## Exercise Implementations Detected
+"""
+            if result.get("database_analysis"):
+                enhancements_section += "- ✅ **Exercise 1**: Database expert added and utilized\n"
+            if smart_routing_used:
+                enhancements_section += "- ✅ **Exercise 2**: Smart routing considers task description + code content\n"
+            if multiple_experts:
+                enhancements_section += f"- ✅ **Exercise 3**: Multi-expert routing ({len(experts_consulted)} experts consulted)\n"
+
+        # Dynamic workflow execution based on what was implemented
+        workflow_steps = [
+            "1. **Coder Agent** → Generated initial code",
+            "2. **Router Agent** → Analyzed content" + (" and task description" if smart_routing_used else "") + f" and selected expert(s)"
+        ]
+        
+        if multiple_experts:
+            workflow_steps.append(f"3. **Multiple Experts** → {', '.join(experts_consulted)} experts provided specialized analysis")
+        else:
+            workflow_steps.append(f"3. **{route_decision.title()} Expert** → Provided domain-specific analysis")
+        
+        workflow_steps.append("4. **Synthesis Agent** → Created final integrated recommendations")
+
+        # Dynamic routing flow
+        if multiple_experts:
+            routing_flow = f"Coder → Router → [{', '.join(experts_consulted)} Experts] → Synthesis"
+        else:
+            routing_flow = f"Coder → Router → {route_decision.title()} Expert → Synthesis"
 
         files_generated = "- `generated_code.py` - Code routed through specialist review"
 
@@ -189,6 +252,7 @@ class ConditionalCodebase(CodebaseGenerator):
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 **Task:** {self.task}
 **Pattern:** Conditional Routing
+**Routing Strategy:** {"Multi-expert routing" if multiple_experts else "Single expert routing"}
 
 ## Generated Code
 ```python
@@ -196,17 +260,15 @@ class ConditionalCodebase(CodebaseGenerator):
 ```
 
 ## Routing Decision
-**Selected Expert:** {route_decision}{specialist_section}{recommendations_section}
+**Primary Expert:** {route_decision}
+**All Routes:** {', '.join(route_decisions) if multiple_experts else route_decision}{specialist_section}{recommendations_section}{enhancements_section}
 
 ## Workflow Execution
-1. **Coder Agent** → Generated initial code
-2. **Router Agent** → Analyzed content and selected `{route_decision}` expert
-3. **{route_decision.title()} Expert** → Provided domain-specific analysis
-4. **Synthesis Agent** → Created final recommendations
+{chr(10).join(workflow_steps)}
 
 ## Routing Flow
 ```
-Coder → Router → {route_decision.title()} Expert → Synthesis
+{routing_flow}
 ```
 
 ## Files Generated
@@ -247,7 +309,6 @@ class ParallelCodebase(CodebaseGenerator):
 
 ### Documentation Analysis
 {result.get('documentation_analysis', 'No documentation analysis available')}"""
-
 
         audit_content = f"""# Parallel Processing Audit Trail
 
@@ -508,7 +569,6 @@ class OrchestratorCodebase(CodebaseGenerator):
 ## Dependency Management
 **Dependency-aware execution:** Subtasks executed in correct order based on dependencies"""
 
-
         worker_outputs_section = ""
         if result.get('worker_outputs'):
             worker_outputs_section = "\n## Worker Outputs\n\n"
@@ -584,7 +644,6 @@ class ProductionCodebase(CodebaseGenerator):
 - **Retry Count:** {result.get('retry_count', 0)}
 - **Human Approval Required:** {result.get('human_approval_needed', False)}
 """
-
 
         audit_content = f"""# Production Ready Audit Trail
 
