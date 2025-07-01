@@ -47,22 +47,22 @@ orchestrator_prompt = ChatPromptTemplate.from_messages([
 ])
 
 frontend_worker_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Frontend Specialist. Create user interfaces, HTML, CSS, JavaScript, React components. Write clean, responsive frontend code."),
+    ("system", "You are a Frontend Specialist. Create user interfaces, as React components with tailwind classes. Write clean, responsive frontend code, and OUTPUT ONLY code."),
     ("human", "Frontend task: {name}\nDescription: {description}")
 ])
 
 backend_worker_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Backend Specialist. Create APIs, business logic, server-side code. Write clean Python/Node.js backend code with proper error handling."),
+    ("system", "You are a Backend Specialist. Create APIs, business logic, server-side code. Write clean Python backend code with proper error handling, and ONLY OUTPUT Python code."),
     ("human", "Backend task: {name}\nDescription: {description}")
 ])
 
 database_worker_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Database Specialist. Design schemas, write SQL queries, handle data persistence. Create efficient, normalised database solutions."),
+    ("system", "You are a Database Specialist. Design schemas, write SQL queries, handle data persistence. Create efficient, normalised database solutions and ONLY OUTPUT SQL."),
     ("human", "Database task: {name}\nDescription: {description}")
 ])
 
 testing_worker_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Testing Specialist. Write comprehensive tests including unit tests, integration tests, and test scenarios."),
+    ("system", "You are a Testing Specialist. Write comprehensive tests including unit tests, integration tests, and test scenarios and ONLY OUTPUT code."),
     ("human", "Testing task: {name}\nDescription: {description}")
 ])
 
