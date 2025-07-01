@@ -124,9 +124,10 @@ graph LR
     Coder --> SecurityAgent
     Coder --> PerformanceAgent
     Coder --> StyleAgent
-    SecurityAgent --> END
-    PerformanceAgent --> END
-    StyleAgent --> END
+    SecurityAgent --> Synthesis
+    PerformanceAgent --> Synthesis
+    StyleAgent --> Synthesis
+    Synthesis --> END
 ```
 
 ```python
