@@ -184,8 +184,6 @@ python patterns/04_supervisor_agents.py
 
 ---
 
----
-
 ### [Pattern 5: Evaluator-Optimiser](PATTERNS.md#pattern-5-evaluator-optimiser) 🔍📈♻️🛠️
 
 - **File**: `patterns/05_evaluator_optimiser.py`
