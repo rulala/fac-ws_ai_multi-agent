@@ -172,26 +172,31 @@ class ConditionalCodebase(CodebaseGenerator):
         final_report = result.get("final_report", "")
 
         # Exercise 2: Smart routing - check if task description was used
-        smart_routing_used = "input" in str(result.get("router_debug", "")) or len(route_decisions) > 1
+        smart_routing_used = "input" in str(result.get(
+            "router_debug", "")) or len(route_decisions) > 1
 
         # Exercise 3: Multi-expert routing detection
         multiple_experts = len(route_decisions) > 1
         experts_consulted = []
-        
+
         # Collect all expert analyses
         expert_analyses = []
         if result.get("security_analysis"):
             experts_consulted.append("Security")
-            expert_analyses.append(f"### Security Expert Analysis\n{result['security_analysis']}")
+            expert_analyses.append(
+                f"### Security Expert Analysis\n{result['security_analysis']}")
         if result.get("performance_analysis"):
-            experts_consulted.append("Performance") 
-            expert_analyses.append(f"### Performance Expert Analysis\n{result['performance_analysis']}")
+            experts_consulted.append("Performance")
+            expert_analyses.append(
+                f"### Performance Expert Analysis\n{result['performance_analysis']}")
         if result.get("database_analysis"):
             experts_consulted.append("Database")
-            expert_analyses.append(f"### Database Expert Analysis\n{result['database_analysis']}")
+            expert_analyses.append(
+                f"### Database Expert Analysis\n{result['database_analysis']}")
         if result.get("general_analysis"):
             experts_consulted.append("General")
-            expert_analyses.append(f"### General Expert Analysis\n{result['general_analysis']}")
+            expert_analyses.append(
+                f"### General Expert Analysis\n{result['general_analysis']}")
 
         # Build specialist section with enhanced information
         if multiple_experts and expert_analyses:
@@ -229,15 +234,20 @@ class ConditionalCodebase(CodebaseGenerator):
         # Dynamic workflow execution based on what was implemented
         workflow_steps = [
             "1. **Coder Agent** → Generated initial code",
-            "2. **Router Agent** → Analyzed content" + (" and task description" if smart_routing_used else "") + f" and selected expert(s)"
+            "2. **Router Agent** → Analyzed content" +
+            (" and task description" if smart_routing_used else "") +
+            f" and selected expert(s)"
         ]
-        
+
         if multiple_experts:
-            workflow_steps.append(f"3. **Multiple Experts** → {', '.join(experts_consulted)} experts provided specialized analysis")
+            workflow_steps.append(
+                f"3. **Multiple Experts** → {', '.join(experts_consulted)} experts provided specialized analysis")
         else:
-            workflow_steps.append(f"3. **{route_decision.title()} Expert** → Provided domain-specific analysis")
-        
-        workflow_steps.append("4. **Synthesis Agent** → Created final integrated recommendations")
+            workflow_steps.append(
+                f"3. **{route_decision.title()} Expert** → Provided domain-specific analysis")
+
+        workflow_steps.append(
+            "4. **Synthesis Agent** → Created final integrated recommendations")
 
         # Dynamic routing flow
         if multiple_experts:
@@ -569,6 +579,47 @@ class OrchestratorCodebase(CodebaseGenerator):
 ## Dependency Management
 **Dependency-aware execution:** Subtasks executed in correct order based on dependencies"""
 
+        # Exercise detection logic
+        exercise_1_completed = False
+        exercise_2_completed = False
+        exercise_3_completed = False
+
+        # Exercise 1: Smart task detection - check if subtasks have diverse types
+        if result.get('subtasks'):
+            task_types = set()
+            for subtask in result['subtasks']:
+                if isinstance(subtask, dict) and subtask.get('type'):
+                    task_types.add(subtask['type'])
+            # Consider completed if we have specialized types beyond just 'implementation'
+            specialized_types = task_types - \
+                {'implementation', 'testing', 'documentation'}
+            if specialized_types or len(task_types) > 2:
+                exercise_1_completed = True
+
+        # Exercise 2: Worker specialisation - check if worker outputs use specialized prefixes
+        if worker_types:  # worker_types was calculated earlier from output prefixes
+            exercise_2_completed = True
+
+        # Exercise 3: Dependency handling - check if subtasks have dependencies
+        if result.get('subtasks') and any(subtask.get('dependencies') for subtask in result.get('subtasks', [])):
+            exercise_3_completed = True
+
+        # Exercise enhancements section
+        enhancements_section = ""
+        if exercise_1_completed or exercise_2_completed or exercise_3_completed:
+            enhancements_section = f"""
+
+## Exercise Implementations Detected
+"""
+            if exercise_1_completed:
+                task_type_list = list(
+                    task_types) if 'task_types' in locals() else []
+                enhancements_section += f"- ✅ **Exercise 1**: Smart task detection implemented (task types: {', '.join(task_type_list)})\n"
+            if exercise_2_completed:
+                enhancements_section += f"- ✅ **Exercise 2**: Worker specialisation implemented ({', '.join(sorted(worker_types))} workers)\n"
+            if exercise_3_completed:
+                enhancements_section += "- ✅ **Exercise 3**: Dependency handling implemented\n"
+
         worker_outputs_section = ""
         if result.get('worker_outputs'):
             worker_outputs_section = "\n## Worker Outputs\n\n"
@@ -584,7 +635,7 @@ class OrchestratorCodebase(CodebaseGenerator):
 
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
 **Task:** {self.task}  
-**Analysis Method:** Dynamic Task Decomposition{worker_specialisation_section}{dependency_handling_section}
+**Analysis Method:** Dynamic Task Decomposition{worker_specialisation_section}{dependency_handling_section}{enhancements_section}
 
 ## Executive Summary
 
@@ -618,7 +669,7 @@ The orchestrator successfully broke down the complex task into {len(result.get('
 {extract_code_from_response(result.get('final_result', 'No code generated'))}
 ```
 
-{subtasks_section}{worker_outputs_section}## Files Generated
+{subtasks_section}{enhancements_section}{worker_outputs_section}## Files Generated
 - `final_code.py` - Synthesised final implementation
 - `ORCHESTRATOR_REPORT.md` - **KEY DELIVERABLE:** Orchestration process breakdown
 
