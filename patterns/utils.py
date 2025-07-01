@@ -447,10 +447,10 @@ class EvaluatorCodebase(CodebaseGenerator):
         self.write_python_file("final_code", result.get(
             'final_code', result.get('code', '')))
 
-        final_score = result.get('quality_score', 'N/A')
+        final_score = result.get('score', 'N/A')
         iteration_count = result.get('iteration_count', 0)
         code_list = result.get('code', [])
-        quality_scores = result.get('quality_scores', [])
+        scores = result.get('scores', [])
 
         # Write each iteration as separate Python file
         files_generated = "- `final_code.py` - Iteratively optimised implementation"
@@ -475,8 +475,8 @@ class EvaluatorCodebase(CodebaseGenerator):
             for i, code_version in enumerate(code_list):
                 iteration_label = "Initial Code" if i == 0 else f"Iteration {i}"
                 score_info = ""
-                if i < len(quality_scores):
-                    score_info = f" (Score: {quality_scores[i]}/10)"
+                if i < len(scores):
+                    score_info = f" (Score: {scores[i]}/10)"
 
                 iterations_section += f"""### {iteration_label}{score_info}
 ```python
