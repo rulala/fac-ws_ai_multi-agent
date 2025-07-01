@@ -13,10 +13,14 @@ class ApprovalDecision(BaseModel):
     approved: bool = Field(description="Whether code is ready for production")
     feedback: str = Field(description="Approval feedback or concerns")
 
+
 class ComplianceResult(BaseModel):
-    compliant: bool = Field(description="Whether code meets regulatory requirements")
-    issues: list = Field(description="List of compliance issues found", default_factory=list)
+    compliant: bool = Field(
+        description="Whether code meets regulatory requirements")
+    issues: list = Field(
+        description="List of compliance issues found", default_factory=list)
     recommendations: str = Field(description="Compliance recommendations")
+
 
 class HumanApprovalDecision(BaseModel):
     approved: bool = Field(description="Human approval decision")
@@ -62,7 +66,8 @@ compliance_prompt = ChatPromptTemplate.from_messages([
 
 human_approval_prompt = ChatPromptTemplate.from_messages([
     ("system", "You are simulating a Human Approver for critical production changes. Make an approval decision based on the code review and compliance report."),
-    ("human", "CRITICAL CHANGE REQUIRING HUMAN APPROVAL\n\nCode:\n{code}\n\nReview:\n{review}\n\nCompliance Report:\n{compliance_report}\n\nApprove for production?")
+    ("human",
+     "CRITICAL CHANGE REQUIRING HUMAN APPROVAL\n\nCode:\n{code}\n\nReview:\n{review}\n\nCompliance Report:\n{compliance_report}\n\nApprove for production?")
 ])
 
 
@@ -77,18 +82,19 @@ def coder_agent(state: ProductionState) -> ProductionState:
             full_input = state["input"]
 
         response = llm.invoke(coder_prompt.format_messages(input=full_input))
-        
+
         # Determine if this is a critical change requiring human approval
         code_content = response.content.lower()
         is_critical = any(keyword in code_content for keyword in [
             'authentication', 'password', 'security', 'payment', 'encryption',
             'database', 'production', 'deploy', 'config', 'admin', 'root'
         ])
-        
-        print(f"🔍 Code analysis: {'CRITICAL CHANGE' if is_critical else 'Standard change'} detected")
-        
+
+        print(
+            f"🔍 Code analysis: {'CRITICAL CHANGE' if is_critical else 'Standard change'} detected")
+
         return {
-            "code": response.content, 
+            "code": response.content,
             "needs_human_approval": is_critical,
             "consecutive_failures": 0  # Reset on successful generation
         }
@@ -122,12 +128,12 @@ def compliance_agent(state: ProductionState) -> ProductionState:
         result = structured_llm.invoke(compliance_prompt.format_messages(
             code=state["code"]
         ))
-        
+
         if result.compliant:
             print("✅ Compliance check passed")
         else:
             print(f"⚠️ Compliance issues found: {len(result.issues)} issues")
-        
+
         return {"compliance_report": f"Compliant: {result.compliant}\nIssues: {result.issues}\nRecommendations: {result.recommendations}"}
     except Exception as e:
         print(f"❌ Compliance check failed: {e}")
@@ -136,6 +142,7 @@ def compliance_agent(state: ProductionState) -> ProductionState:
             "compliance_report": "Compliance check failed",
             "consecutive_failures": consecutive_failures
         }
+
 
 def approval_agent(state: ProductionState) -> ProductionState:
     try:
@@ -151,7 +158,7 @@ def approval_agent(state: ProductionState) -> ProductionState:
             print(f"❌ Code rejected: {decision.feedback}")
             consecutive_failures = state.get("consecutive_failures", 0) + 1
             return {
-                "approved": False, 
+                "approved": False,
                 "feedback": decision.feedback,
                 "consecutive_failures": consecutive_failures
             }
@@ -160,10 +167,11 @@ def approval_agent(state: ProductionState) -> ProductionState:
         print(f"❌ Approval process failed: {e}")
         consecutive_failures = state.get("consecutive_failures", 0) + 1
         return {
-            "approved": False, 
+            "approved": False,
             "retry_count": state.get("retry_count", 0) + 1,
             "consecutive_failures": consecutive_failures
         }
+
 
 def human_approval_agent(state: ProductionState) -> ProductionState:
     """Exercise 1: Human approval gates for critical changes"""
@@ -172,26 +180,28 @@ def human_approval_agent(state: ProductionState) -> ProductionState:
         decision = structured_llm.invoke(human_approval_prompt.format_messages(
             code=state["code"],
             review=state["review"],
-            compliance_report=state.get("compliance_report", "No compliance report")
+            compliance_report=state.get(
+                "compliance_report", "No compliance report")
         ))
-        
+
         if decision.approved:
             print("👤✅ Human approver: APPROVED for production")
             return {"human_approved": True, "feedback": decision.comments}
         else:
             print(f"👤❌ Human approver: REJECTED - {decision.comments}")
             return {"human_approved": False, "feedback": decision.comments}
-            
+
     except Exception as e:
         print(f"❌ Human approval failed: {e}")
         return {"human_approved": False, "feedback": "Human approval process failed"}
+
 
 def manual_review_agent(state: ProductionState) -> ProductionState:
     """Exercise 2: Manual review when circuit breaker is triggered"""
     print("🚨 CIRCUIT BREAKER TRIGGERED - Manual review required")
     print(f"   Consecutive failures: {state.get('consecutive_failures', 0)}")
     print(f"   Manual intervention needed for production deployment")
-    
+
     # Simulate manual review approval for workshop purposes
     return {
         "approved": True,
@@ -209,15 +219,17 @@ def finalise_agent(state: ProductionState) -> ProductionState:
 def handle_errors(state: ProductionState) -> ProductionState:
     retry_count = state.get("retry_count", 0) + 1
     consecutive_failures = state.get("consecutive_failures", 0)
-    
-    print(f"⚠️ Error occurred, retry {retry_count}/3 (consecutive failures: {consecutive_failures})")
-    
+
+    print(
+        f"⚠️ Error occurred, retry {retry_count}/3 (consecutive failures: {consecutive_failures})")
+
     # Exercise 2: Circuit breaker - trigger after 2 consecutive failures
     circuit_breaker_triggered = consecutive_failures >= 2
-    
+
     if circuit_breaker_triggered:
-        print("🚨 CIRCUIT BREAKER: 2 consecutive failures reached - routing to manual review")
-    
+        print(
+            "🚨 CIRCUIT BREAKER: 2 consecutive failures reached - routing to manual review")
+
     return {
         "retry_count": retry_count,
         "circuit_breaker_triggered": circuit_breaker_triggered
@@ -226,11 +238,11 @@ def handle_errors(state: ProductionState) -> ProductionState:
 
 def should_retry(state: ProductionState) -> Literal["retry", "compliance"]:
     retry_count = state.get("retry_count", 0)
-    
+
     # Check circuit breaker first
     if state.get("circuit_breaker_triggered", False):
         return "compliance"  # Continue to compliance even with circuit breaker
-    
+
     if retry_count > 0 and retry_count < 3:
         return "retry"
     return "compliance"  # Changed from "reviewer" to "compliance"
@@ -242,6 +254,7 @@ def check_circuit_breaker(state: ProductionState) -> Literal["manual_review", "h
         return "manual_review"
     return "human_approval"
 
+
 def check_human_approval_needed(state: ProductionState) -> Literal["human_approval", "finalise"]:
     """Exercise 1: Check if human approval is needed for critical changes"""
     if state.get("needs_human_approval", False):
@@ -249,17 +262,19 @@ def check_human_approval_needed(state: ProductionState) -> Literal["human_approv
         return "human_approval"
     return "finalise"
 
+
 def check_final_approval(state: ProductionState) -> Literal["finalise", "retry"]:
     """Check final approval status considering both automated and human approval"""
     automated_approved = state.get("approved", False)
-    human_approved = state.get("human_approved", True)  # Default true if not needed
+    # Default true if not needed
+    human_approved = state.get("human_approved", True)
     needs_human = state.get("needs_human_approval", False)
-    
+
     # If human approval was needed, check it was given
     if needs_human and not human_approved:
         print("❌ Human approval required but not granted")
         return "retry"
-    
+
     if automated_approved:
         return "finalise"
 
@@ -284,7 +299,7 @@ builder.add_node("handle_errors", handle_errors)
 # Build the production workflow with all exercises
 builder.add_edge(START, "coder")
 builder.add_conditional_edges("coder", should_retry, {
-    "retry": "handle_errors", 
+    "retry": "handle_errors",
     "compliance": "reviewer"
 })
 builder.add_edge("handle_errors", "coder")
@@ -318,18 +333,21 @@ if __name__ == "__main__":
         "approved": False,
         "human_approved": False
     })
-    
+
     # Display execution summary
     print(f"\n📊 Production Pipeline Results:")
     print(f"  Automated approval: {'✅' if result.get('approved') else '❌'}")
-    print(f"  Human approval: {'✅' if result.get('human_approved') else '❌' if result.get('needs_human_approval') else 'N/A'}")
-    print(f"  Circuit breaker triggered: {'🚨 YES' if result.get('circuit_breaker_triggered') else '✅ NO'}")
-    print(f"  Compliance check: {'✅ PASSED' if 'Compliant: True' in str(result.get('compliance_report', '')) else '⚠️ ISSUES'}")
+    print(
+        f"  Human approval: {'✅' if result.get('human_approved') else '❌' if result.get('needs_human_approval') else 'N/A'}")
+    print(
+        f"  Circuit breaker triggered: {'🚨 YES' if result.get('circuit_breaker_triggered') else '✅ NO'}")
+    print(
+        f"  Compliance check: {'✅ PASSED' if 'Compliant: True' in str(result.get('compliance_report', '')) else '⚠️ ISSUES'}")
     print(f"  Retry count: {result.get('retry_count', 0)}/3")
-    
+
     if result.get('needs_human_approval'):
         print(f"  🔒 Critical change - human approval was required")
-    
+
     if result.get('circuit_breaker_triggered'):
         print(f"  🚨 Circuit breaker activated - manual review completed")
 
