@@ -1,9 +1,10 @@
 import os
 import re
 import datetime
+import shutil
 import time
 import functools
-from typing import Dict, Any, Callable, List
+from typing import Dict, Any, Optional, Callable, List
 
 
 def extract_code_from_response(response_text: str) -> str:
@@ -18,69 +19,6 @@ def extract_code_from_response(response_text: str) -> str:
 def sanitise_filename(text: str) -> str:
     sanitised = re.sub(r'[^\w\s-]', '', text).strip()
     return re.sub(r'[-\s]+', '_', sanitised).lower()
-
-
-def time_agent_execution(func: Callable) -> Callable:
-    """
-    Decorator to time agent execution. Pre-built utility for workshop exercises.
-
-    Usage:
-        @time_agent_execution
-        def my_agent(state):
-            # agent logic
-            return state
-    """
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        print(f"🔄 Starting {func.__name__}...")
-        result = func(*args, **kwargs)
-        execution_time = time.time() - start_time
-        print(f"✅ {func.__name__} completed in {execution_time:.2f}s")
-        return result
-    return wrapper
-
-
-def log_workflow_step(step_name: str, details: str = "") -> None:
-    """
-    Simple logging utility for workflow steps. Pre-built utility for workshop exercises.
-
-    Usage:
-        log_workflow_step("agent_started", "Processing user input")
-        log_workflow_step("agent_completed", "Generated 150 lines of code")
-    """
-    timestamp = datetime.datetime.now().strftime("%H:%M:%S")
-    message = f"[{timestamp}] {step_name}"
-    if details:
-        message += f": {details}"
-    print(f"📝 {message}")
-
-
-def create_workflow_summary(metrics: Dict[str, Any]) -> str:
-    """
-    Create a formatted summary of workflow execution. Pre-built utility for workshop exercises.
-
-    Usage:
-        summary = create_workflow_summary({
-            "total_time": 25.4,
-            "agents_used": ["coder", "reviewer", "refactorer"],
-            "iterations": 3
-        })
-    """
-    summary_lines = ["=" * 50, "🎯 WORKFLOW EXECUTION SUMMARY", "=" * 50]
-
-    for key, value in metrics.items():
-        if key == "total_time":
-            summary_lines.append(f"⏱️  Total execution time: {value:.2f}s")
-        elif key == "agents_used":
-            summary_lines.append(f"🤖 Agents involved: {', '.join(value)}")
-        elif key == "iterations":
-            summary_lines.append(f"🔄 Iterations completed: {value}")
-        else:
-            summary_lines.append(f"📊 {key}: {value}")
-
-    summary_lines.append("=" * 50)
-    return "\n".join(summary_lines)
 
 
 class CodebaseGenerator:
