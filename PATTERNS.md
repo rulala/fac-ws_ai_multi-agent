@@ -85,10 +85,9 @@ graph LR
     RouteDecision -->|Security| SecurityExpert
     RouteDecision -->|Performance| PerformanceExpert
     RouteDecision -->|General| GeneralExpert
-    SecurityExpert --> Synthesis
-    PerformanceExpert --> Synthesis
-    GeneralExpert --> Synthesis
-    Synthesis --> END
+    SecurityExpert --> END
+    PerformanceExpert --> END
+    GeneralExpert --> END
 ```
 
 ```python
@@ -125,10 +124,9 @@ graph LR
     Coder --> SecurityAgent
     Coder --> PerformanceAgent
     Coder --> StyleAgent
-    SecurityAgent --> Synthesis
-    PerformanceAgent --> Synthesis
-    StyleAgent --> Synthesis
-    Synthesis --> END
+    SecurityAgent --> END
+    PerformanceAgent --> END
+    StyleAgent --> END
 ```
 
 ```python
