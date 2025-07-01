@@ -108,8 +108,10 @@ python patterns/01_sequential_workflow.py
 #### **Your 3 Exercises** 🎯 _LangGraph Focus_ (modify the code):
 
 1. **Add a tester agent**: Create `tester_agent` function that generates unit tests. Add node after refactorer.
-   > [!IMPORTANT]  
-   > The tester agent's state key must be `tests` for the utils function to be able to pick it up and add to the output folder.
+
+> [!IMPORTANT]  
+> The tester agent's state key must be `tests` for the utils function to be able to pick it up and add to the output folder.
+
 2. **Change focus to security**: Modify all prompts to emphasise security vulnerabilities instead of general quality.
 3. **Add conditional routing**: Route to different refactoring approaches based on code type (web, API, data processing).
 
