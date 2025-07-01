@@ -260,37 +260,6 @@ python patterns/06_orchestrator_worker.py
 
 ---
 
-## STRETCH: Production Ready Implementation
-
-- **File**: `patterns/07_production_ready.py`
-- **Concept**: Error handling, retries, and approval gates for ANY architectural pattern
-- **Note**: This demonstrates operational concerns applicable to all patterns, not a distinct architecture
-
-**Run and explore**:
-
-```bash
-python patterns/07_production_ready.py
-# Note retry behaviour and error handling
-```
-
-**Your 3 Exercises** 🎯 _LangGraph Focus_ (modify the code):
-
-1. **Add approval gates**: Add human approval nodes with conditional routing for critical changes.
-2. **Circuit breaker**: After 2 consecutive failures, skip to manual review.
-3. **Compliance check**: Add `compliance_agent` that checks regulatory requirements before approval.
-
-> [!IMPORTANT]
-> The "Production Ready" implementation is **not an architectural pattern** but rather a set of **operational concerns** that can be appended to ANY of the architectural patterns (1-5) or chain of patterns when deploying to production. It demonstrates:
->
-> - Error handling and recovery
-> - Retry mechanisms
-> - Approval workflows
-> - State persistence
-> - Monitoring and logging
-
-> [!TIP]
-> Think of it as "how to make any pattern production-ready" rather than a distinct way of organising agents.
-
 ## Next Steps
 
 After completing all exercises:
@@ -299,7 +268,7 @@ After completing all exercises:
 2. Select appropriate architectural pattern(s) (1-6)
 3. Combine patterns if needed, add tools
 4. Experiment using different models for different agents (perhaps a reasoning model for reviews etc)
-5. Apply production-ready techniques from Pattern 7
+5. Apply production-ready techniques
 6. Deploy using [LangGraph Platform](https://langchain-ai.github.io/langgraph/concepts/langgraph_platform/)
 
 ---

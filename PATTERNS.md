@@ -258,57 +258,6 @@ builder.add_conditional_edges("orchestrator", create_workers, ["worker"])
 **Pros**: Maximum flexibility, dynamic scaling, isolated execution <br />
 **Cons**: Most complex, harder to predict execution flow <br />
 
-## Production Ready Implementation
-
-- **When to use**: Real deployment with error handling needed, appended to your multi-agent system
-- **File**: `07_production_ready.py`
-- **Description**: Enterprise features: error handling, persistence, monitoring
-- **Best for**: Real-world deployment
-- **Complexity**: Very High
-- **Execution**: Robust
-- **Use cases**: Production systems, Enterprise deployment, Mission-critical tasks
-
-```mermaid
-graph TD
-    START --> Coder
-    Coder --> ErrorCheck{Error?}
-    ErrorCheck -->|Yes| HandleErrors
-    ErrorCheck -->|No| Reviewer
-    HandleErrors --> RetryCheck{Retries < 3?}
-    RetryCheck -->|Yes| Coder
-    RetryCheck -->|No| ManualReview
-    Reviewer --> Approval
-    Approval --> ApprovalCheck{Approved?}
-    ApprovalCheck -->|Yes| Finalise
-    ApprovalCheck -->|No| HandleErrors
-    Finalise --> END
-    ManualReview --> END
-```
-
-```python
-# Key structure
-def check_approval(state):
-    if state["approved"]:
-        return "deploy"
-    if state["retries"] < 3:
-        return "retry"
-    return "manual_review"
-```
-
-**Real implementation**: ANY pattern + error handling + retries + approval gates <br /> <br />
-
-**What it adds**:
-
-- Error handling and recovery
-- Retry mechanisms with backoff
-- Approval workflows
-- State persistence
-- Monitoring and logging
-- Circuit breakers
-- Rollback capabilities
-
-**Important**: This is NOT a distinct architectural pattern but a set of concerns you apply to patterns 1-6 for production deployment
-
 ## Pattern Complexity & Performance
 
 ```mermaid
@@ -327,15 +276,14 @@ graph TD
     end
 ```
 
-| Pattern            | Latency | Reliability | Use When                   |
-| ------------------ | ------- | ----------- | -------------------------- |
-| Sequential         | 1x      | High        | Order matters              |
-| Conditional        | 1-3x    | Medium      | Quality gates needed       |
-| Parallel           | 0.3x    | Medium      | Speed critical             |
-| Supervisor         | 1.2x    | High        | Complex coordination       |
-| Evaluator          | 3-10x   | High        | Quality critical           |
-| Orchestrator       | 2-20x   | Medium      | Dynamic task decomposition |
-| + Production Ready | +50%    | Very High   | Deploying ANY pattern live |
+| Pattern      | Latency | Reliability | Use When                   |
+| ------------ | ------- | ----------- | -------------------------- |
+| Sequential   | 1x      | High        | Order matters              |
+| Conditional  | 1-3x    | Medium      | Quality gates needed       |
+| Parallel     | 0.3x    | Medium      | Speed critical             |
+| Supervisor   | 1.2x    | High        | Complex coordination       |
+| Evaluator    | 3-10x   | High        | Quality critical           |
+| Orchestrator | 2-20x   | Medium      | Dynamic task decomposition |
 
 ## Combining Patterns
 
