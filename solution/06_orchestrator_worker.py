@@ -103,6 +103,13 @@ def orchestrator_agent(state: OrchestratorState) -> OrchestratorState:
 def create_workers(state: OrchestratorState):
     available_subtasks = []
     completed = set(state.get("completed_subtasks", []))
+    total_subtasks = len(state.get("subtasks", []))
+
+    # Check if all subtasks are completed
+    if len(completed) >= total_subtasks:
+        print(
+            f"✅ All {total_subtasks} subtasks completed, proceeding to synthesis")
+        return [Send("synthesis", state)]
 
     for subtask in state["subtasks"]:
         if subtask["name"] not in completed:
@@ -111,30 +118,12 @@ def create_workers(state: OrchestratorState):
             if dependencies_met:
                 available_subtasks.append(subtask)
 
+    if not available_subtasks:
+        print(f"⚠️ No more workers can run due to dependencies, proceeding to synthesis")
+        return [Send("synthesis", state)]
+
+    print(f"🔄 Creating {len(available_subtasks)} workers")
     return [Send("worker", {"subtask": subtask}) for subtask in available_subtasks]
-
-
-def check_workers_needed(state: OrchestratorState) -> Literal["workers", "synthesis"]:
-    completed = set(state.get("completed_subtasks", []))
-    total_subtasks = len(state.get("subtasks", []))
-    
-    # Check if all subtasks are completed
-    if len(completed) >= total_subtasks:
-        print(f"✅ All {total_subtasks} subtasks completed, proceeding to synthesis")
-        return "synthesis"
-    
-    # Check if there are more workers to run
-    for subtask in state["subtasks"]:
-        if subtask["name"] not in completed:
-            dependencies_met = all(
-                dep in completed for dep in subtask["dependencies"])
-            if dependencies_met:
-                print(f"🔄 More workers needed, found available subtask: {subtask['name']}")
-                return "workers"
-    
-    # No more workers can run, but not all complete - proceed to synthesis with partial results
-    print(f"⚠️ No more workers can run due to dependencies, proceeding to synthesis")
-    return "synthesis"
 
 
 def frontend_worker_agent(state: WorkerState) -> dict:
@@ -226,11 +215,6 @@ def synthesis_agent(state: OrchestratorState) -> OrchestratorState:
     return {"final_result": response.content}
 
 
-def should_continue_workers(state: OrchestratorState) -> Literal["workers", "synthesis"]:
-    """Determine if more workers should be created or if we should proceed to synthesis"""
-    return check_workers_needed(state)
-
-
 builder = StateGraph(OrchestratorState)
 builder.add_node("orchestrator", orchestrator_agent)
 builder.add_node("worker", worker_agent)
@@ -242,12 +226,9 @@ builder.add_edge(START, "orchestrator")
 builder.add_conditional_edges("orchestrator", create_workers, ["worker"])
 builder.add_edge("worker", "track_completion")
 builder.add_conditional_edges(
-    "track_completion", 
-    check_workers_needed, 
-    {
-        "workers": "orchestrator",  # Create more workers
-        "synthesis": "synthesis"    # All done, synthesize
-    }
+    "track_completion",
+    create_workers,
+    ["worker", "synthesis"]
 )
 builder.add_edge("synthesis", END)
 
@@ -258,17 +239,17 @@ if __name__ == "__main__":
 
     print("Starting intelligent orchestrator-worker with dependencies...")
     result = workflow.invoke({"input": task})
-    
+
     # Display execution summary
     subtasks = result.get("subtasks", [])
     completed = result.get("completed_subtasks", [])
     worker_outputs = result.get("worker_outputs", [])
-    
+
     print(f"\n📊 Execution Summary:")
     print(f"  Subtasks created: {len(subtasks)}")
     print(f"  Subtasks completed: {len(completed)}")
     print(f"  Worker outputs: {len(worker_outputs)}")
-    
+
     # Show worker types used
     worker_types = set()
     for output in worker_outputs:
@@ -280,10 +261,10 @@ if __name__ == "__main__":
             worker_types.add("Database")
         elif output.startswith("TESTING"):
             worker_types.add("Testing")
-    
+
     if worker_types:
-        print(f"  Specialized workers used: {', '.join(sorted(worker_types))}")
-    
+        print(f"  Specialised workers used: {', '.join(sorted(worker_types))}")
+
     # Show dependency handling
     deps_used = any(subtask.get("dependencies") for subtask in subtasks)
     if deps_used:
