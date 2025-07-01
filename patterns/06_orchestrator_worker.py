@@ -117,4 +117,4 @@ if __name__ == "__main__":
     codebase = OrchestratorCodebase("06_orchestrator_worker", task)
     codebase.generate(result)
 
-    print("=== WORKFLOW COMPLETED ===")
+    print("=== ORCHESTRATOR WORKFLOW COMPLETED ===")
