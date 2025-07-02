@@ -2,7 +2,9 @@ import os
 import re
 import datetime
 import shutil
-from typing import Dict, Any, Optional
+import time
+import functools
+from typing import Dict, Any, Optional, Callable, List
 
 
 def extract_code_from_response(response_text: str) -> str:
@@ -19,22 +21,6 @@ def sanitise_filename(text: str) -> str:
     return re.sub(r'[-\s]+', '_', sanitised).lower()
 
 
-def find_test_key(result: Dict[str, Any]) -> Optional[str]:
-    """Return the first key containing 'test' if present."""
-    for key in result:
-        if 'test' in key.lower():
-            return key
-    return None
-
-
-def find_compliance_key(result: Dict[str, Any]) -> Optional[str]:
-    """Return the first key containing 'compliance' if present."""
-    for key in result:
-        if 'compliance' in key.lower():
-            return key
-    return None
-
-
 class CodebaseGenerator:
     def __init__(self, pattern_name: str, task: str):
         self.pattern_name = pattern_name
@@ -46,10 +32,11 @@ class CodebaseGenerator:
         os.makedirs(self.folder_name, exist_ok=True)
         return self.folder_name
 
-    def write_python_file(self, filename: str, content: str) -> None:
+    def write_code_file(self, filename: str, content: str, extension: str) -> None:
         code = extract_code_from_response(content)
         if code:
-            filepath = os.path.join(self.folder_name, f"{filename}.py")
+            filepath = os.path.join(
+                self.folder_name, f"{filename}.{extension}")
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(code)
 
@@ -63,33 +50,25 @@ class SequentialCodebase(CodebaseGenerator):
     def generate(self, result: Dict[str, Any]) -> None:
         self.create_folder()
 
-        self.write_python_file("original_code", result.get('code', ''))
-        self.write_python_file(
-            "refactored_code", result.get('refactored_code', ''))
+        self.write_code_file("original_code", result.get('code', '',), "py")
+        self.write_code_file(
+            "refactored_code", result.get('refactored_code', ''), "py")
 
-        tests_key = find_test_key(result)
-        if tests_key and result.get(tests_key):
-            self.write_python_file("unit_tests", result.get(tests_key, ""))
+        if result.get('tests'):
+            self.write_code_file("tests", result.get('tests', ''), "py")
 
-        unit_tests_section = ""
-        if tests_key and result.get(tests_key):
-            unit_tests_section = f"""
+        tests_section = ""
+        if result.get('tests'):
+            tests_section = f"""
 
 ## Unit Tests
 ```python
-{extract_code_from_response(result.get(tests_key, 'No tests generated'))}
+{extract_code_from_response(result.get('tests', 'No unit tests generated'))}
 ```"""
 
         files_generated = "- `original_code.py` - Initial implementation\n- `refactored_code.py` - Improved version based on review"
-        if tests_key and result.get(tests_key):
-            files_generated += "\n- `unit_tests.py` - Comprehensive test suite"
-
-        performance_section = ""
-        if 'performance_metrics' in str(result):
-            performance_section = f"""
-
-## Performance Metrics
-Execution timing analysis available in debug output."""
+        if result.get('tests'):
+            files_generated += "\n- `tests.py` - Comprehensive test suite"
 
         audit_content = f"""# Sequential Workflow Audit Trail
 
@@ -108,7 +87,7 @@ Execution timing analysis available in debug output."""
 ## Refactored Code
 ```python
 {extract_code_from_response(result.get('refactored_code', 'No refactored code available'))}
-```{unit_tests_section}{performance_section}
+```{tests_section}
 
 ## Files Generated
 {files_generated}
@@ -123,23 +102,97 @@ Execution timing analysis available in debug output."""
 class ConditionalCodebase(CodebaseGenerator):
     def generate(self, result: Dict[str, Any]) -> None:
         self.create_folder()
-        self.write_python_file("generated_code", result.get('code', ''))
+        self.write_code_file("generated_code", result.get('code', ''), "py")
 
+        # Exercise 1: Database expert detection
         route_decision = result.get("route_decision", "unknown")
+        route_decisions = result.get("route_decisions", [route_decision])
         specialist_analysis = result.get("specialist_analysis", "")
         final_report = result.get("final_report", "")
 
-        specialist_section = ""
-        if specialist_analysis:
+        # Exercise 2: Smart routing - check if task description was used
+        smart_routing_used = "input" in str(result.get(
+            "router_debug", "")) or len(route_decisions) > 1
+
+        # Exercise 3: Multi-expert routing detection
+        multiple_experts = len(route_decisions) > 1
+        experts_consulted = []
+
+        # Collect all expert analyses
+        expert_analyses = []
+        if result.get("security_analysis"):
+            experts_consulted.append("Security")
+            expert_analyses.append(
+                f"### Security Expert Analysis\n{result['security_analysis']}")
+        if result.get("performance_analysis"):
+            experts_consulted.append("Performance")
+            expert_analyses.append(
+                f"### Performance Expert Analysis\n{result['performance_analysis']}")
+        if result.get("database_analysis"):
+            experts_consulted.append("Database")
+            expert_analyses.append(
+                f"### Database Expert Analysis\n{result['database_analysis']}")
+        if result.get("general_analysis"):
+            experts_consulted.append("General")
+            expert_analyses.append(
+                f"### General Expert Analysis\n{result['general_analysis']}")
+
+        # Build specialist section with enhanced information
+        if multiple_experts and expert_analyses:
+            specialist_section = f"""
+## Multi-Expert Analysis
+**Experts Consulted:** {', '.join(experts_consulted)}
+
+{chr(10).join(expert_analyses)}"""
+        elif specialist_analysis:
             specialist_section = f"""
 ## Specialist Analysis ({route_decision.title()} Expert)
 {specialist_analysis}"""
+        else:
+            specialist_section = ""
 
         recommendations_section = ""
         if final_report:
             recommendations_section = f"""
 ## Final Recommendations
 {final_report}"""
+
+        # Exercise enhancements section
+        enhancements_section = ""
+        if multiple_experts or smart_routing_used or result.get("database_analysis"):
+            enhancements_section = f"""
+## Exercise Implementations Detected
+"""
+            if result.get("database_analysis"):
+                enhancements_section += "- ✅ **Exercise 1**: Database expert added and utilized\n"
+            if smart_routing_used:
+                enhancements_section += "- ✅ **Exercise 2**: Smart routing considers task description + code content\n"
+            if multiple_experts:
+                enhancements_section += f"- ✅ **Exercise 3**: Multi-expert routing ({len(experts_consulted)} experts consulted)\n"
+
+        # Dynamic workflow execution based on what was implemented
+        workflow_steps = [
+            "1. **Coder Agent** → Generated initial code",
+            "2. **Router Agent** → Analyzed content" +
+            (" and task description" if smart_routing_used else "") +
+            f" and selected expert(s)"
+        ]
+
+        if multiple_experts:
+            workflow_steps.append(
+                f"3. **Multiple Experts** → {', '.join(experts_consulted)} experts provided specialized analysis")
+        else:
+            workflow_steps.append(
+                f"3. **{route_decision.title()} Expert** → Provided domain-specific analysis")
+
+        workflow_steps.append(
+            "4. **Synthesis Agent** → Created final integrated recommendations")
+
+        # Dynamic routing flow
+        if multiple_experts:
+            routing_flow = f"Coder → Router → [{', '.join(experts_consulted)} Experts] → Synthesis"
+        else:
+            routing_flow = f"Coder → Router → {route_decision.title()} Expert → Synthesis"
 
         files_generated = "- `generated_code.py` - Code routed through specialist review"
 
@@ -148,6 +201,7 @@ class ConditionalCodebase(CodebaseGenerator):
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 **Task:** {self.task}
 **Pattern:** Conditional Routing
+**Routing Strategy:** {"Multi-expert routing" if multiple_experts else "Single expert routing"}
 
 ## Generated Code
 ```python
@@ -155,17 +209,15 @@ class ConditionalCodebase(CodebaseGenerator):
 ```
 
 ## Routing Decision
-**Selected Expert:** {route_decision}{specialist_section}{recommendations_section}
+**Primary Expert:** {route_decision}
+**All Routes:** {', '.join(route_decisions) if multiple_experts else route_decision}{specialist_section}{recommendations_section}{enhancements_section}
 
 ## Workflow Execution
-1. **Coder Agent** → Generated initial code
-2. **Router Agent** → Analyzed content and selected `{route_decision}` expert
-3. **{route_decision.title()} Expert** → Provided domain-specific analysis
-4. **Synthesis Agent** → Created final recommendations
+{chr(10).join(workflow_steps)}
 
 ## Routing Flow
 ```
-Coder → Router → {route_decision.title()} Expert → Synthesis
+{routing_flow}
 ```
 
 ## Files Generated
@@ -183,25 +235,13 @@ class ParallelCodebase(CodebaseGenerator):
     def generate(self, result: Dict[str, Any]) -> None:
         self.create_folder()
 
-        self.write_python_file("main_code", result.get('code', ''))
-
-        performance_comparison = ""
-        if result.get('sequential_time') and result.get('parallel_time'):
-            seq_time = result['sequential_time']
-            par_time = result['parallel_time']
-            speedup = seq_time / par_time if par_time > 0 else 0
-            performance_comparison = f"""
-
-## Performance Analysis
-- **Sequential execution:** {seq_time:.2f}s
-- **Parallel execution:** {par_time:.2f}s  
-- **Speedup achieved:** {speedup:.2f}x"""
+        self.write_code_file("main_code", result.get('code', ''), "py")
 
         synthesis_content = f"""# Code Analysis Synthesis Report
 
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
 **Task:** {self.task}  
-**Analysis Method:** Parallel Expert Review{performance_comparison}
+**Analysis Method:** Parallel Expert Review
 
 ## Executive Summary
 
@@ -218,13 +258,6 @@ class ParallelCodebase(CodebaseGenerator):
 
 ### Documentation Analysis
 {result.get('documentation_analysis', 'No documentation analysis available')}"""
-
-        error_handling_section = ""
-        if any("failed" in str(result.get(key, "")) for key in ['security_analysis', 'performance_analysis', 'style_analysis', 'documentation_analysis']):
-            error_handling_section = f"""
-
-## Error Handling
-Some agents encountered errors during execution but the workflow continued gracefully."""
 
         audit_content = f"""# Parallel Processing Audit Trail
 
@@ -246,7 +279,7 @@ Some agents encountered errors during execution but the workflow continued grace
 {result.get('performance_analysis', 'No performance analysis available')}
 
 ### Style Analysis
-{result.get('style_analysis', 'No style analysis available')}{documentation_section}{error_handling_section}
+{result.get('style_analysis', 'No style analysis available')}{documentation_section}
 
 ## Files Generated
 - `main_code.py` - Analysed implementation
@@ -265,7 +298,7 @@ class SupervisorCodebase(CodebaseGenerator):
     def generate(self, result: Dict[str, Any]) -> None:
         self.create_folder()
 
-        self.write_python_file("main_code", result.get('code', ''))
+        self.write_code_file("main_code", result.get('code', ''), "py")
 
         task_analysis_section = ""
         if result.get('task_type'):
@@ -360,13 +393,13 @@ class EvaluatorCodebase(CodebaseGenerator):
         self.create_folder()
 
         # Write final code
-        self.write_python_file("final_code", result.get(
-            'final_code', result.get('code', '')))
+        self.write_code_file("final_code", result.get(
+            'final_code', result.get('code', '')), "py")
 
-        final_score = result.get('quality_score', 'N/A')
+        final_score = result.get('score', 'N/A')
         iteration_count = result.get('iteration_count', 0)
         code_list = result.get('code', [])
-        quality_scores = result.get('quality_scores', [])
+        scores = result.get('scores', [])
 
         # Write each iteration as separate Python file
         files_generated = "- `final_code.py` - Iteratively optimised implementation"
@@ -379,16 +412,10 @@ class EvaluatorCodebase(CodebaseGenerator):
                     filename = f"iteration_{i}"
                     files_generated += f"\n- `iteration_{i}.py` - Iteration {i} improvement"
 
-                self.write_python_file(filename, code_version)
+                self.write_code_file(filename, code_version, "py")
 
         # Determine completion reason
-        completion_reason = "Quality threshold reached"
-        if iteration_count >= 3:
-            completion_reason = "Max iterations reached"
-        elif final_score >= 7:
-            completion_reason = "Quality threshold reached"
-        else:
-            completion_reason = "Optimization complete"
+        completion_reason = "Max iterations reached" if iteration_count >= 3 else "Quality threshold reached"
 
         # Build iterations section
         iterations_section = ""
@@ -397,8 +424,8 @@ class EvaluatorCodebase(CodebaseGenerator):
             for i, code_version in enumerate(code_list):
                 iteration_label = "Initial Code" if i == 0 else f"Iteration {i}"
                 score_info = ""
-                if i < len(quality_scores):
-                    score_info = f" (Score: {quality_scores[i]}/10)"
+                if i < len(scores):
+                    score_info = f" (Score: {scores[i]}/10)"
 
                 iterations_section += f"""### {iteration_label}{score_info}
 ```python
@@ -439,10 +466,132 @@ class EvaluatorCodebase(CodebaseGenerator):
 
 
 class OrchestratorCodebase(CodebaseGenerator):
+    def extract_worker_outputs(self, result: Dict[str, Any]) -> Dict[str, str]:
+        """Extract individual worker outputs by type from worker_outputs list"""
+        worker_outputs = {}
+
+        if not result.get('worker_outputs'):
+            return worker_outputs
+
+        for output in result['worker_outputs']:
+            if isinstance(output, str):
+                # Parse worker type from output prefix
+                if output.startswith('FRONTEND -'):
+                    worker_outputs['frontend'] = output.split(
+                        'FRONTEND -', 1)[1].strip()
+                elif output.startswith('BACKEND -'):
+                    worker_outputs['backend'] = output.split(
+                        'BACKEND -', 1)[1].strip()
+                elif output.startswith('DATABASE -'):
+                    worker_outputs['database'] = output.split(
+                        'DATABASE -', 1)[1].strip()
+                elif output.startswith('TESTING -'):
+                    worker_outputs['testing'] = output.split(
+                        'TESTING -', 1)[1].strip()
+                else:
+                    # Generic worker output - use as fallback
+                    worker_outputs['generic'] = output
+
+        return worker_outputs
+
+    def write_specialized_files(self, worker_outputs: Dict[str, str]) -> List[str]:
+        """Write individual worker outputs as separate specialized files"""
+        files_created = []
+
+        # Database worker output -> SQL schema file
+        if 'database' in worker_outputs:
+            content = worker_outputs['database']
+            # Extract SQL content
+            sql_content = extract_code_from_response(content)
+            if sql_content and ('CREATE' in sql_content.upper() or 'INSERT' in sql_content.upper()):
+                self.write_text_file("database_schema.sql", sql_content)
+                files_created.append("database_schema.sql")
+            else:
+                self.write_text_file("database_design.md", content)
+                files_created.append("database_design.md")
+
+        # Backend worker output -> API file
+        if 'backend' in worker_outputs:
+            content = worker_outputs['backend']
+            code_content = extract_code_from_response(content)
+            if code_content:
+                self.write_code_file("api_endpoints", content, "py")
+                files_created.append("api_endpoints.py")
+            else:
+                self.write_text_file("backend_design.md", content)
+                files_created.append("backend_design.md")
+
+        # Frontend worker output -> HTML/JS files
+        if 'frontend' in worker_outputs:
+            content = worker_outputs['frontend']
+            code_content = extract_code_from_response(content)
+            if code_content:
+                # Check if it contains HTML
+                if '<html' in code_content.lower() or '<!doctype' in code_content.lower():
+                    self.write_text_file("login_form.html", code_content)
+                    files_created.append("login_form.html")
+                else:
+                    self.write_code_file("frontend_components", content, "jsx")
+                    files_created.append("frontend_components.jsx")
+            else:
+                self.write_text_file("frontend_design.md", content)
+                files_created.append("frontend_design.md")
+
+        # Testing worker output -> test file
+        if 'testing' in worker_outputs:
+            content = worker_outputs['testing']
+            self.write_code_file("test_suite", content, "js")
+            files_created.append("test_suite.js")
+
+        # Generic worker output -> main implementation
+        if 'generic' in worker_outputs:
+            content = worker_outputs['generic']
+            self.write_code_file("implementation", content, "py")
+            files_created.append("implementation.py")
+
+        return files_created
+
+    def _format_specialized_files(self, specialized_files: List[str]) -> str:
+        """Format specialized files list for markdown output"""
+        if not specialized_files:
+            return ""
+
+        formatted_files = []
+        for filename in specialized_files:
+            if filename.endswith('.sql'):
+                formatted_files.append(
+                    f"- `{filename}` - Database schema and tables")
+            elif filename.endswith('.py') and 'api' in filename:
+                formatted_files.append(
+                    f"- `{filename}` - Backend API implementation")
+            elif filename.endswith('.py') and 'test' in filename:
+                formatted_files.append(
+                    f"- `{filename}` - Comprehensive test suite")
+            elif filename.endswith('.html'):
+                formatted_files.append(
+                    f"- `{filename}` - Frontend login interface")
+            elif filename.endswith('.py') and 'frontend' in filename:
+                formatted_files.append(f"- `{filename}` - Frontend components")
+            elif filename.endswith('.py'):
+                formatted_files.append(f"- `{filename}` - Implementation code")
+            elif filename.endswith('.md'):
+                formatted_files.append(
+                    f"- `{filename}` - Design documentation")
+            else:
+                formatted_files.append(f"- `{filename}` - Generated component")
+
+        return '\n' + '\n'.join(formatted_files)
+
     def generate(self, result: Dict[str, Any]) -> None:
         self.create_folder()
 
-        self.write_python_file("final_code", result.get('final_result', ''))
+        # Extract individual worker outputs and create specialized files
+        worker_outputs = self.extract_worker_outputs(result)
+        specialized_files = self.write_specialized_files(worker_outputs)
+
+        # Write final synthesized code (keep for reference)
+        self.write_code_file(
+            "final_code", result.get('final_result', ''), "sql")
 
         subtasks_section = ""
         if result.get('subtasks'):
@@ -491,15 +640,46 @@ class OrchestratorCodebase(CodebaseGenerator):
 ## Dependency Management
 **Dependency-aware execution:** Subtasks executed in correct order based on dependencies"""
 
-        validation_section = ""
-        if result.get('validation_result'):
-            validation = result['validation_result']
-            validation_section = f"""
+        # Exercise detection logic
+        exercise_1_completed = False
+        exercise_2_completed = False
+        exercise_3_completed = False
 
-## Integration Validation
-- **Can combine:** {validation.get('can_combine', 'Unknown')}
-- **Issues found:** {len(validation.get('issues', []))}
-- **Suggestions:** {len(validation.get('suggestions', []))}"""
+        # Exercise 1: Smart task detection - check if subtasks have diverse types
+        if result.get('subtasks'):
+            task_types = set()
+            for subtask in result['subtasks']:
+                if isinstance(subtask, dict) and subtask.get('type'):
+                    task_types.add(subtask['type'])
+            # Consider completed if we have specialized types beyond just 'implementation'
+            specialized_types = task_types - \
+                {'implementation', 'testing', 'documentation'}
+            if specialized_types or len(task_types) > 2:
+                exercise_1_completed = True
+
+        # Exercise 2: Worker specialisation - check if worker outputs use specialized prefixes
+        if worker_types:  # worker_types was calculated earlier from output prefixes
+            exercise_2_completed = True
+
+        # Exercise 3: Dependency handling - check if subtasks have dependencies
+        if result.get('subtasks') and any(subtask.get('dependencies') for subtask in result.get('subtasks', [])):
+            exercise_3_completed = True
+
+        # Exercise enhancements section
+        enhancements_section = ""
+        if exercise_1_completed or exercise_2_completed or exercise_3_completed:
+            enhancements_section = f"""
+
+## Exercise Implementations Detected
+"""
+            if exercise_1_completed:
+                task_type_list = list(
+                    task_types) if 'task_types' in locals() else []
+                enhancements_section += f"- ✅ **Exercise 1**: Smart task detection implemented (task types: {', '.join(task_type_list)})\n"
+            if exercise_2_completed:
+                enhancements_section += f"- ✅ **Exercise 2**: Worker specialisation implemented ({', '.join(sorted(worker_types))} workers)\n"
+            if exercise_3_completed:
+                enhancements_section += "- ✅ **Exercise 3**: Dependency handling implemented\n"
 
         worker_outputs_section = ""
         if result.get('worker_outputs'):
@@ -516,7 +696,7 @@ class OrchestratorCodebase(CodebaseGenerator):
 
 **Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
 **Task:** {self.task}  
-**Analysis Method:** Dynamic Task Decomposition{worker_specialisation_section}{dependency_handling_section}{validation_section}
+**Analysis Method:** Dynamic Task Decomposition{worker_specialisation_section}{dependency_handling_section}{enhancements_section}
 
 ## Executive Summary
 
@@ -528,8 +708,7 @@ The orchestrator successfully broke down the complex task into {len(result.get('
 2. **Dynamic Decomposition**: Created {len(result.get('subtasks', []))} specialised subtasks
 3. **Dependency Resolution**: Executed subtasks in correct order
 4. **Specialised Execution**: Workers processed subtasks independently
-5. **Integration Validation**: Checked compatibility before synthesis
-6. **Result Synthesis**: Combined worker outputs into final solution
+5. **Result Synthesis**: Combined worker outputs into final solution
 
 {subtasks_section}
 
@@ -551,9 +730,10 @@ The orchestrator successfully broke down the complex task into {len(result.get('
 {extract_code_from_response(result.get('final_result', 'No code generated'))}
 ```
 
-{subtasks_section}{worker_outputs_section}## Files Generated
-- `final_code.py` - Synthesised final implementation
+{subtasks_section}{enhancements_section}{worker_outputs_section}## Files Generated
+- `final_code.py` - Synthesised final implementation (reference)
 - `ORCHESTRATOR_REPORT.md` - **KEY DELIVERABLE:** Orchestration process breakdown
+{self._format_specialized_files(specialized_files)}
 
 ---
 *Generated using LangGraph Orchestrator-Worker Pattern*
@@ -562,66 +742,3 @@ The orchestrator successfully broke down the complex task into {len(result.get('
         print(
             f"✅ Orchestrator-worker codebase created in: {self.folder_name}/")
         print(f"🎯 Key deliverable: {self.folder_name}/ORCHESTRATOR_REPORT.md")
-
-
-class ProductionCodebase(CodebaseGenerator):
-    def generate(self, result: Dict[str, Any]) -> None:
-        self.create_folder()
-
-        self.write_python_file("production_code", result.get(
-            'refactored_code', result.get('code', '')))
-
-        metrics_section = f"""## Production Metrics
-- **Session ID:** {result.get('session_id', 'N/A')}
-- **Execution Time:** {result.get('execution_time', 0):.2f}s
-- **Retry Count:** {result.get('retry_count', 0)}
-- **Human Approval Required:** {result.get('human_approval_needed', False)}
-"""
-
-        error_section = ""
-        if result.get('error_log'):
-            error_section = f"""## Error Log
-```
-{result['error_log']}
-```
-
-"""
-
-        compliance_section = ""
-        compliance_key = find_compliance_key(result)
-        if compliance_key and result.get(compliance_key):
-            compliance_section = f"""## Compliance Report
-{result[compliance_key]}"""
-
-        if result.get('workflow_log') and os.path.exists(result['workflow_log']):
-            shutil.copy(result['workflow_log'], os.path.join(self.folder_name, 'workflow.log'))
-            log_line = "\n- `workflow.log` - Execution trace"
-        else:
-            log_line = ""
-
-        audit_content = f"""# Production Ready Audit Trail
-
-**Generated:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
-**Task:** {self.task}  
-**Pattern:** Production Ready
-
-## Production Code
-```python
-{extract_code_from_response(result.get('refactored_code', result.get('code', 'No code generated')))}
-```
-
-{metrics_section}
-
-{compliance_section}
-
-## Review Feedback
-{result.get('review', 'No review available')}
-
-{error_section}## Files Generated
-- `production_code.py` - Production-ready implementation{log_line}
-
----
-*Generated using LangGraph Production Ready Pattern*
-"""
-        self.write_text_file("AUDIT_TRAIL.md", audit_content)
-        print(f"✅ Production ready codebase created in: {self.folder_name}/")

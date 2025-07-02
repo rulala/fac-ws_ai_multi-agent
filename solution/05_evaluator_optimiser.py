@@ -14,10 +14,9 @@ class OptimisationState(TypedDict):
     security_score: int
     performance_score: int
     readability_score: int
-    lowest_score: int
+    score: int
+    scores: int
     iteration_count: int
-    best_code_index: int
-    best_lowest_score: int
     final_code: str
 
 
@@ -60,8 +59,6 @@ def code_generator(state: OptimisationState) -> OptimisationState:
     return {
         "code": [response.content],
         "iteration_count": 0,
-        "best_code_index": 0,
-        "best_lowest_score": 0
     }
 
 
@@ -92,26 +89,18 @@ def multi_criteria_evaluator_agent(state: OptimisationState) -> OptimisationStat
         readability_score = 5
 
     lowest_score = min(security_score, performance_score, readability_score)
+    lowest_scores = state.get("scores", [])
+    lowest_scores.append(lowest_score)
 
     print(
         f"📊 Scores - Security: {security_score}, Performance: {performance_score}, Readability: {readability_score} (Lowest: {lowest_score})")
-
-    # Track best version
-    best_code_index = state.get("best_code_index", 0)
-    best_lowest_score = state.get("best_lowest_score", 0)
-
-    if lowest_score > best_lowest_score:
-        best_code_index = current_iteration
-        best_lowest_score = lowest_score
-        print(f"🏆 New best code found! Score: {lowest_score}/10")
 
     return {
         "security_score": security_score,
         "performance_score": performance_score,
         "readability_score": readability_score,
-        "lowest_score": lowest_score,
-        "best_code_index": best_code_index,
-        "best_lowest_score": best_lowest_score
+        "score": lowest_score,
+        "scores": lowest_scores,
     }
 
 
@@ -132,36 +121,34 @@ def optimiser_agent(state: OptimisationState) -> OptimisationState:
     }
 
 
-def finalise_best_code(state: OptimisationState) -> OptimisationState:
-    best_index = state.get("best_code_index", len(state["code"]) - 1)
-    best_code = state["code"][best_index]
-
-    if best_index != len(state["code"]) - 1:
-        print(
-            f"🎯 Selected best code from iteration {best_index + 1} (score: {state['best_lowest_score']}/10) instead of final iteration")
-
-    return {"final_code": best_code}
+def finalise_code(state: OptimisationState) -> OptimisationState:
+    final_code = state["code"][-1] if state["code"] else ""
+    return {"final_code": final_code}
 
 
 def should_continue_optimisation(state: OptimisationState) -> Literal["optimise", "finalise"]:
+    # Exercise 1: Adjusted thresholds
+    quality_threshold = 9  # Changed from 7 to 9
+    max_iterations = 5     # Increased from 3 to 5 to accommodate higher threshold
+
     iteration_count = state.get("iteration_count", 0)
-    lowest_score = state.get("lowest_score", 0)
+    lowest_score = state.get("score", 0)
+    fast_track = state.get("fast_track", False)
 
-    # Fast track: Skip optimization if initial score is high enough
-    if iteration_count == 0 and lowest_score >= FAST_TRACK_THRESHOLD:
-        print(
-            f"🚀 Fast track activated! All scores ≥ {FAST_TRACK_THRESHOLD} - skipping optimization")
+    # Exercise 2: Fast track - skip optimization if initial score >= 8
+    if fast_track:
+        print(f"🚀 Fast track complete! Initial score was ≥ 8, optimization skipped")
         return "finalise"
 
-    # Max iterations reached
-    if iteration_count >= MAX_ITERATIONS:
+    if iteration_count >= max_iterations:
         print(
-            f"Max iterations reached. Best score achieved: {state.get('best_lowest_score', 0)}/10")
+            f"Max iterations ({max_iterations}) reached. Final score: {lowest_score}/10. Quality threshold {quality_threshold}/10 not reached.")
         return "finalise"
 
-    # Quality threshold reached
-    if lowest_score >= QUALITY_THRESHOLD and iteration_count > 0:
-        print(f"✅ Quality threshold reached! Lowest score: {lowest_score}/10")
+    # Exercise 3: Route based on lowest score reaching threshold
+    if lowest_score >= quality_threshold and iteration_count > 0:
+        print(
+            f"✅ Quality threshold ({quality_threshold}) reached! Lowest score: {lowest_score}/10")
         return "finalise"
 
     return "optimise"
@@ -171,8 +158,7 @@ builder = StateGraph(OptimisationState)
 builder.add_node("generator", code_generator)
 builder.add_node("evaluator", multi_criteria_evaluator_agent)
 builder.add_node("optimiser", optimiser_agent)
-builder.add_node("finalise", finalise_best_code)
-
+builder.add_node("finalise", finalise_code)
 builder.add_edge(START, "generator")
 builder.add_edge("generator", "evaluator")
 builder.add_conditional_edges(
@@ -186,7 +172,7 @@ builder.add_edge("finalise", END)
 workflow = builder.compile()
 
 if __name__ == "__main__":
-    task = "Write a REST API endpoint for file upload with validation"
+    task = "Write a secure REST API endpoint for file upload with comprehensive validation, error handling, and performance optimization"
 
     print("Starting iterative optimisation...")
     result = workflow.invoke({"input": task})
@@ -194,4 +180,4 @@ if __name__ == "__main__":
     codebase = EvaluatorCodebase("05_evaluator_optimiser", task)
     codebase.generate(result)
 
-    print("=== WORKFLOW COMPLETED ===")
+    print("=== EVALUATOR-OPTIMISER WORKFLOW COMPLETED ===")

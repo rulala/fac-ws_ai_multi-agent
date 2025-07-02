@@ -11,8 +11,8 @@ load_dotenv()
 class OptimisationState(TypedDict):
     input: str
     code: list
-    quality_score: int
-    quality_scores: list
+    score: int
+    scores: list
     iteration_count: int
     final_code: str
 
@@ -122,4 +122,4 @@ if __name__ == "__main__":
     codebase = EvaluatorCodebase("05_evaluator_optimiser", task)
     codebase.generate(result)
 
-    print("=== WORKFLOW COMPLETED ===")
+    print("=== EVALUATOR=OPTIMISER WORKFLOW COMPLETED ===")

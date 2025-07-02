@@ -132,4 +132,4 @@ if __name__ == "__main__":
     codebase = SupervisorCodebase("04_supervisor_agents", task)
     codebase.generate(result)
 
-    print("=== WORKFLOW COMPLETED ===")
+    print("=== SUPERVISOR AGENTS WORKFLOW COMPLETED ===")

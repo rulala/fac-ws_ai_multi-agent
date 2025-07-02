@@ -105,27 +105,15 @@ python patterns/01_sequential_workflow.py
 # Check generated/ folder for output
 ```
 
-#### **Your 4 Exercises** (modify the code):
+#### **Your 3 Exercises** 🎯 _LangGraph Focus_ (modify the code):
 
 1. **Add a tester agent**: Create `tester_agent` function that generates unit tests. Add node after refactorer.
-2. **Change focus**: Modify all prompts to emphasise security vulnerabilities instead of general quality.
-3. **Add persistence**: Save state between nodes to a JSON file for debugging.
-4. **Measure performance**: Add timing to each node, print execution summary.
 
-> [!TIP]
-> Exercise 4 requires a @time_node_execution decorator function to wrap each agent that will print logs and timings as below:
->
-> ```bash
-> 🔄 Starting coder...
-> ✅ coder completed in 6.24s
-> 🔄 Starting reviewer...
-> ✅ reviewer completed in 6.39s
-> 🔄 Starting refactorer...
-> ✅ refactorer completed in 3.47s
-> 🔄 Starting tester...
-> ✅ tester completed in 12.61s
-> ✅ Sequential codebase created in: generated/01_sequential_workflow_20250602_162810/
-> ```
+> [!IMPORTANT]  
+> The tester agent's state key must be `tests` for the utils function to be able to pick it up and add to the output folder.
+
+2. **Change focus to security**: Modify all prompts to emphasise security vulnerabilities instead of general quality.
+3. **Add conditional routing**: Route to different refactoring approaches based on code type (web, API, data processing).
 
 ---
 
@@ -142,12 +130,11 @@ python patterns/02_conditional_routing.py
 # Watch router decision in output
 ```
 
-#### **Your 4 Exercises** (modify the code):
+#### **Your 3 Exercises** 🎯 _LangGraph Focus_ (modify the code):
 
-1. **Add more experts**: Create `database_expert_agent` and update router logic to route SQL/schema code.
+1. **Add database expert**: Create `database_expert_agent` and update router logic to route SQL/schema code.
 2. **Smart routing**: Make router consider task description as well as code content for routing decisions.
-3. **Route confidence**: Add confidence scoring - if router is uncertain, route to general expert.
-4. **Multi-expert routing**: Allow router to send code to multiple experts when it contains mixed concerns.
+3. **Multi-expert routing**: Allow router to send code to multiple experts when it contains mixed concerns.
 
 ---
 
@@ -167,12 +154,11 @@ python patterns/03_parallel_processing.py
 # Check SYNTHESIS_REPORT.md
 ```
 
-#### **Your 4 Exercises** (modify the code):
+#### **Your 3 Exercises** 🎯 _LangGraph Focus_ (modify the code):
 
 1. **Add documentation agent**: Create `documentation_agent` that generates docstrings. Run in parallel.
-2. **Add timing**: Import `time`, measure sequential vs parallel execution.
-3. **Handle failures**: Wrap agents in try/except, continue if one fails.
-4. **Weighted synthesis**: Give security 2x weight in final recommendations.
+2. **Add fallback routing**: If an expert agent fails, route to a general expert as fallback.
+3. **Weighted synthesis**: Give security 2x weight in final recommendations.
 
 ---
 
@@ -192,14 +178,11 @@ python patterns/04_supervisor_agents.py
 # Check EXPERT_ANALYSIS.md
 ```
 
-#### **Your 4 Exercises** (modify the code):
+#### **Your 3 Exercises** 🎯 _LangGraph Focus_ (modify the code):
 
 1. **Add database expert**: Create `database_expert_agent` for SQL/schema review. Update supervisor logic.
-2. **Smart routing**: Make supervisor check code content (e.g., "if 'sql' in code: route to database expert").
+2. **Smart content routing**: Make supervisor check code content (e.g., "if 'sql' in code: route to database expert").
 3. **Expert collaboration**: Let security expert see quality report before finalising.
-4. **Add priorities**: Supervisor should consult security expert first for authentication tasks.
-
----
 
 ---
 
@@ -219,28 +202,11 @@ python patterns/05_evaluator_optimiser.py
 # Watch score progression
 ```
 
-#### **Your 4 Exercises** (modify the code):
+#### **Your 3 Exercises** 🎯 _LangGraph Focus_ (modify the code):
 
-1. **Adjust threshold**: Change `quality_threshold = 7` to 9. How many iterations now? Play around with `max_iterations` too.
+1. **Adjust thresholds**: Change `quality_threshold = 7` to 9. How many iterations now? Play around with `max_iterations` too.
 2. **Add fast track**: If initial score ≥ 8, skip refactoring entirely.
-3. **Multi-criteria evaluation**: Score separately for security, performance, readability. Route based on lowest.
-4. **Final code selection**: Update logic so that the final code that is chosen after timeout is the one with the highest `lowest_score` instead of last code generated.
-
-> [!TIP]
-> Exercise 3 requires a single multi_criteria_evaluator_agent to handle separate scores. Exercise 4 requires a finalize_best_code function and node plus **state fields `best_code_index` and `best_lowest_score` to track the highest-scoring code version**. It should log something like this:
->
-> ```bash
-> 📊 Scores - Security: 1, Performance: 7, Readability: 8 (Lowest: 1)
-> 🏆 New best code found! Score: 1/10
-> 📊 Scores - Security: 3, Performance: 3, Readability: 8 (Lowest: 3)
-> 🏆 New best code found! Score: 3/10
-> 📊 Scores - Security: 3, Performance: 3, Readability: 8 (Lowest: 3)
-> 📊 Scores - Security: 2, Performance: 8, Readability: 8 (Lowest: 2)
-> Max iterations reached. Best score achieved: 3/10
-> 🎯 Selected best code from iteration 2 (score: 3/10) instead of final iteration
-> 🎯 Selected best code from iteration 2 (score: 3/10) instead of final iteration
-> ✅ Conditional routing codebase created in: generated/02_conditional_routing_20250602_182427/
-> ```
+3. **Multi-criteria routing**: Score separately for security, performance, readability. Route based on lowest score.
 
 ---
 
@@ -257,12 +223,11 @@ python patterns/06_orchestrator_worker.py
 # Note dynamic worker creation
 ```
 
-#### **Your 4 Exercises** (modify the code):
+#### **Your 3 Exercises** 🎯 _LangGraph Focus_ (modify the code):
 
 1. **Smart task detection**: Make orchestrator identify task type (frontend, backend, database) and assign appropriate worker types.
 2. **Worker specialisation**: Create different worker agents for different task types with specialised prompts.
 3. **Dependency handling**: Allow orchestrator to create subtasks with dependencies (e.g., "database schema must complete before API").
-4. **Result validation**: Add validator that checks if worker outputs can be combined successfully before synthesis.
 
 ---
 
@@ -297,38 +262,6 @@ python patterns/06_orchestrator_worker.py
 
 ---
 
-## STRETCH: Production Ready Implementation
-
-- **File**: `patterns/07_production_ready.py`
-- **Concept**: Error handling, retries, and approval gates for ANY architectural pattern
-- **Note**: This demonstrates operational concerns applicable to all patterns, not a distinct architecture
-
-**Run and explore**:
-
-```bash
-python patterns/07_production_ready.py
-# Note retry behaviour and error handling
-```
-
-**Your 4 Exercises** (modify the code):
-
-1. **Add monitoring**: Log each node entry/exit with timestamps to `workflow.log`.
-2. **Circuit breaker**: After 2 consecutive failures, skip to manual review.
-3. **Rollback state**: Save last approved version, revert if new version fails.
-4. **Compliance check**: Add `compliance_agent` that checks regulatory requirements before approval.
-
-> [!IMPORTANT]
-> The "Production Ready" implementation is **not an architectural pattern** but rather a set of **operational concerns** that can be appended to ANY of the architectural patterns (1-5) or chain of patterns when deploying to production. It demonstrates:
->
-> - Error handling and recovery
-> - Retry mechanisms
-> - Approval workflows
-> - State persistence
-> - Monitoring and logging
-
-> [!TIP]
-> Think of it as "how to make any pattern production-ready" rather than a distinct way of organising agents.
-
 ## Next Steps
 
 After completing all exercises:
@@ -337,7 +270,7 @@ After completing all exercises:
 2. Select appropriate architectural pattern(s) (1-6)
 3. Combine patterns if needed, add tools
 4. Experiment using different models for different agents (perhaps a reasoning model for reviews etc)
-5. Apply production-ready techniques from Pattern 7
+5. Apply production-ready techniques
 6. Deploy using [LangGraph Platform](https://langchain-ai.github.io/langgraph/concepts/langgraph_platform/)
 
 ---

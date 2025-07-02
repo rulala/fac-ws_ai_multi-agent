@@ -27,19 +27,11 @@ class TaskBreakdown(BaseModel):
     subtasks: List[SubTask] = Field(description="List of subtasks to complete")
 
 
-class ValidationResult(BaseModel):
-    can_combine: bool = Field(
-        description="Whether outputs can be successfully combined")
-    issues: List[str] = Field(description="List of integration issues found")
-    suggestions: List[str] = Field(description="Suggestions for improvement")
-
-
 class OrchestratorState(TypedDict):
     input: str
     subtasks: List[dict]
     completed_subtasks: List[str]
     worker_outputs: Annotated[List[str], operator.add]
-    validation_result: dict
     final_result: str
 
 
@@ -55,34 +47,29 @@ orchestrator_prompt = ChatPromptTemplate.from_messages([
 ])
 
 frontend_worker_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Frontend Specialist. Create user interfaces, HTML, CSS, JavaScript, React components. Write clean, responsive frontend code."),
+    ("system", "You are a Frontend Specialist. Create user interfaces, as React components with tailwind classes. Write clean, responsive frontend code, and OUTPUT ONLY code."),
     ("human", "Frontend task: {name}\nDescription: {description}")
 ])
 
 backend_worker_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Backend Specialist. Create APIs, business logic, server-side code. Write clean Python/Node.js backend code with proper error handling."),
+    ("system", "You are a Backend Specialist. Create APIs, business logic, server-side code. Write clean Python backend code with proper error handling, and ONLY OUTPUT Python code."),
     ("human", "Backend task: {name}\nDescription: {description}")
 ])
 
 database_worker_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Database Specialist. Design schemas, write SQL queries, handle data persistence. Create efficient, normalised database solutions."),
+    ("system", "You are a Database Specialist. Design schemas, write SQL queries, handle data persistence. Create efficient, normalised database solutions and ONLY OUTPUT SQL."),
     ("human", "Database task: {name}\nDescription: {description}")
 ])
 
 testing_worker_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Testing Specialist. Write comprehensive tests including unit tests, integration tests, and test scenarios."),
+    ("system", "You are a Testing Specialist. Write comprehensive tests including unit tests, integration tests, and test scenarios and ONLY OUTPUT code."),
     ("human", "Testing task: {name}\nDescription: {description}")
-])
-
-validation_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Technical Validator. Analyse if these code outputs can be integrated successfully. Check for compatibility, missing connections, and integration issues."),
-    ("human", "Validate integration of these outputs:\n{outputs}")
 ])
 
 synthesis_prompt = ChatPromptTemplate.from_messages([
     ("system", "You are a Code Synthesiser. Combine validated worker outputs into a cohesive final solution. Address any integration issues noted by the validator."),
     ("human",
-     "Worker outputs:\n{outputs}\n\nValidation results:\n{validation}")
+     "Worker outputs:\n{outputs}")
 ])
 
 
@@ -116,6 +103,13 @@ def orchestrator_agent(state: OrchestratorState) -> OrchestratorState:
 def create_workers(state: OrchestratorState):
     available_subtasks = []
     completed = set(state.get("completed_subtasks", []))
+    total_subtasks = len(state.get("subtasks", []))
+
+    # Check if all subtasks are completed
+    if len(completed) >= total_subtasks:
+        print(
+            f"✅ All {total_subtasks} subtasks completed, proceeding to synthesis")
+        return [Send("synthesis", state)]
 
     for subtask in state["subtasks"]:
         if subtask["name"] not in completed:
@@ -124,20 +118,12 @@ def create_workers(state: OrchestratorState):
             if dependencies_met:
                 available_subtasks.append(subtask)
 
+    if not available_subtasks:
+        print(f"⚠️ No more workers can run due to dependencies, proceeding to synthesis")
+        return [Send("synthesis", state)]
+
+    print(f"🔄 Creating {len(available_subtasks)} workers")
     return [Send("worker", {"subtask": subtask}) for subtask in available_subtasks]
-
-
-def check_workers_needed(state: OrchestratorState) -> Literal["workers", "validation"]:
-    completed = set(state.get("completed_subtasks", []))
-
-    for subtask in state["subtasks"]:
-        if subtask["name"] not in completed:
-            dependencies_met = all(
-                dep in completed for dep in subtask["dependencies"])
-            if dependencies_met:
-                return "workers"
-
-    return "validation"
 
 
 def frontend_worker_agent(state: WorkerState) -> dict:
@@ -217,66 +203,33 @@ def track_completion(state: OrchestratorState) -> OrchestratorState:
     return {"completed_subtasks": completed}
 
 
-def validation_agent(state: OrchestratorState) -> OrchestratorState:
-    worker_outputs = state.get("worker_outputs", [])
-    outputs_text = "\n\n---\n\n".join(worker_outputs)
-
-    structured_llm = llm.with_structured_output(ValidationResult)
-    validation = structured_llm.invoke(
-        validation_prompt.format_messages(outputs=outputs_text))
-
-    validation_dict = {
-        "can_combine": validation.can_combine,
-        "issues": validation.issues,
-        "suggestions": validation.suggestions
-    }
-
-    if validation.can_combine:
-        print("✅ Validation passed - outputs can be integrated")
-    else:
-        print(f"⚠️ Validation issues found: {len(validation.issues)} issues")
-        for issue in validation.issues[:3]:
-            print(f"  - {issue}")
-
-    return {"validation_result": validation_dict}
-
-
 def synthesis_agent(state: OrchestratorState) -> OrchestratorState:
     worker_outputs = state.get("worker_outputs", [])
     outputs_text = "\n\n---\n\n".join(worker_outputs)
-    validation_text = str(state.get("validation_result", {}))
 
     response = llm.invoke(synthesis_prompt.format_messages(
-        outputs=outputs_text,
-        validation=validation_text
+        outputs=outputs_text
     ))
 
     print(f"🔄 Synthesiser integrated {len(worker_outputs)} worker outputs")
     return {"final_result": response.content}
 
 
-def check_completion(state: OrchestratorState) -> bool:
-    completed = len(state.get("completed_subtasks", []))
-    total = len(state.get("subtasks", []))
-    return completed >= total
-
-
 builder = StateGraph(OrchestratorState)
 builder.add_node("orchestrator", orchestrator_agent)
 builder.add_node("worker", worker_agent)
 builder.add_node("track_completion", track_completion)
-builder.add_node("validation", validation_agent)
 builder.add_node("synthesis", synthesis_agent)
 
+# Build the workflow graph
 builder.add_edge(START, "orchestrator")
 builder.add_conditional_edges("orchestrator", create_workers, ["worker"])
 builder.add_edge("worker", "track_completion")
-builder.add_conditional_edges("track_completion", check_workers_needed, {
-                              "workers": "create_workers_node", "validation": "validation"})
-builder.add_node("create_workers_node", lambda state: state)
 builder.add_conditional_edges(
-    "create_workers_node", create_workers, ["worker"])
-builder.add_edge("validation", "synthesis")
+    "track_completion",
+    create_workers,
+    ["worker", "synthesis"]
+)
 builder.add_edge("synthesis", END)
 
 workflow = builder.compile()
@@ -284,10 +237,40 @@ workflow = builder.compile()
 if __name__ == "__main__":
     task = "Create a user authentication system with database, API endpoints, frontend login form, and comprehensive tests"
 
-    print("Starting orchestrator-worker with dependencies...")
+    print("Starting intelligent orchestrator-worker with dependencies...")
     result = workflow.invoke({"input": task})
+
+    # Display execution summary
+    subtasks = result.get("subtasks", [])
+    completed = result.get("completed_subtasks", [])
+    worker_outputs = result.get("worker_outputs", [])
+
+    print(f"\n📊 Execution Summary:")
+    print(f"  Subtasks created: {len(subtasks)}")
+    print(f"  Subtasks completed: {len(completed)}")
+    print(f"  Worker outputs: {len(worker_outputs)}")
+
+    # Show worker types used
+    worker_types = set()
+    for output in worker_outputs:
+        if output.startswith("FRONTEND"):
+            worker_types.add("Frontend")
+        elif output.startswith("BACKEND"):
+            worker_types.add("Backend")
+        elif output.startswith("DATABASE"):
+            worker_types.add("Database")
+        elif output.startswith("TESTING"):
+            worker_types.add("Testing")
+
+    if worker_types:
+        print(f"  Specialised workers used: {', '.join(sorted(worker_types))}")
+
+    # Show dependency handling
+    deps_used = any(subtask.get("dependencies") for subtask in subtasks)
+    if deps_used:
+        print(f"  🔗 Dependency-aware execution completed")
 
     codebase = OrchestratorCodebase("06_orchestrator_worker", task)
     codebase.generate(result)
 
-    print("=== WORKFLOW COMPLETED ===")
+    print("=== INTELLIGENT ORCHESTRATOR WORKFLOW COMPLETED ===")

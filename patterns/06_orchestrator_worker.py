@@ -42,7 +42,7 @@ orchestrator_prompt = ChatPromptTemplate.from_messages([
 ])
 
 worker_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a specialist worker. Complete ONLY the specific subtask assigned to you. Write clean Python code."),
+    ("system", "You are a specialist worker. Complete ONLY the specific subtask assigned to you. Write clean Python code and ONLY OUTPUT Python code or SQL."),
     ("human", "Subtask: {name}\nDescription: {description}\nType: {type}")
 ])
 
@@ -117,4 +117,4 @@ if __name__ == "__main__":
     codebase = OrchestratorCodebase("06_orchestrator_worker", task)
     codebase.generate(result)
 
-    print("=== WORKFLOW COMPLETED ===")
+    print("=== ORCHESTRATOR WORKFLOW COMPLETED ===")
